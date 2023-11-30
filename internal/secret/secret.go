@@ -1,16 +1,16 @@
-package vault
+package secret
 
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
-	"regexp"
 	"strings"
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
 	"github.com/toalaah/vaultsubst/internal/transformations"
 )
+
+type VaultData map[string]interface{}
 
 // SecretSpec represents a single secret in a file to be patched.
 type SecretSpec struct {
@@ -20,18 +20,20 @@ type SecretSpec struct {
 	Transformations []string `mapstructure:"transformations"`
 }
 
-func (v *SecretSpec) FormatSecret(data VaultData) (string, error) {
+// FormatSecret returns a formatted secret from "raw" Vault data, based on the
+// Spec's configured transformations
+func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 	var (
 		res string
 		err error
 	)
 
-	res, ok := data[v.Field].(string)
+	res, ok := data[spec.Field].(string)
 	if !ok {
-		return "", fmt.Errorf("could not cast data at field %s to string\n", v.Field)
+		return "", fmt.Errorf("could not cast data at field %s to string\n", spec.Field)
 	}
 
-	if v.B64 {
+	if spec.B64 {
 		b, err := base64.StdEncoding.DecodeString(res)
 		if err != nil {
 			return "", err
@@ -39,7 +41,7 @@ func (v *SecretSpec) FormatSecret(data VaultData) (string, error) {
 		res = string(b)
 	}
 
-	for _, t := range v.Transformations {
+	for _, t := range spec.Transformations {
 		res, err = transformations.Apply(t, res)
 		if err != nil {
 			return "", err
@@ -49,6 +51,8 @@ func (v *SecretSpec) FormatSecret(data VaultData) (string, error) {
 	return res, nil
 }
 
+// NewSecretSpec constructs and returns a new SecretSpec from a structured
+// string.
 func NewSecretSpec(s string) (*SecretSpec, error) {
 	// ["path=...", "field=..."]
 	specs := strings.Split(s, ",")
@@ -82,7 +86,8 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 	return result, err
 }
 
-func GetSecretFromSpec(spec *SecretSpec, client *vault.Client) (string, error) {
+// Secret fetches and returns a formatted vault secret string from a SecretSpec
+func (spec *SecretSpec) Secret(client *vault.Client) (string, error) {
 	path := strings.TrimPrefix(spec.Path, "kv/")
 	secret, err := client.Logical().Read("kv/data/" + path)
 	if err != nil {
@@ -93,33 +98,4 @@ func GetSecretFromSpec(spec *SecretSpec, client *vault.Client) (string, error) {
 	}
 	data := secret.Data["data"].(map[string]interface{})
 	return spec.FormatSecret(data)
-}
-
-func PatchSecretsInFile(file string, regexp *regexp.Regexp, client *vault.Client, inPlace bool) error {
-	f, err := os.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	s := string(f)
-	matches := regexp.FindAllStringSubmatch(s, -1)
-	for _, match := range matches {
-		originalContent := match[0]
-		spec, err := NewSecretSpec(match[1])
-		if err != nil {
-			return err
-		}
-		secret, err := GetSecretFromSpec(spec, client)
-		if err != nil {
-			return err
-		}
-		s = strings.Replace(s, originalContent, secret, -1)
-	}
-
-	if inPlace {
-		return os.WriteFile(file, []byte(s), 0644)
-	} else {
-		fmt.Fprint(os.Stdout, s)
-	}
-
-	return nil
 }

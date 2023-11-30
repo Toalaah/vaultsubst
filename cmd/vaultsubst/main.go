@@ -2,9 +2,11 @@ package vaultsubst
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 
-	"github.com/toalaah/vaultsubst/internal/vault"
+	vault "github.com/hashicorp/vault/api"
+	subst "github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,8 +15,8 @@ var delimiter string
 var inPlace bool
 
 var app = &cli.App{
-	Name:  "vaultsubst",
-	Usage: "inject and format vault secrets into files",
+	Name:            "vaultsubst",
+	Usage:           "inject and format vault secrets into files",
 	ArgsUsage:       "FILE [FILE...]",
 	Action:          runCmd,
 	HideHelpCommand: true,
@@ -44,13 +46,23 @@ func runCmd(ctx *cli.Context) error {
 		return cli.ShowAppHelp(ctx)
 	}
 
-	client, err := vault.NewClient()
+  addr := os.Getenv("VAULT_ADDR")
+  token := os.Getenv("VAULT_TOKEN")
+  if addr == "" {
+    return fmt.Errorf("VAULT_ADDR unset")
+  }
+  if token == "" {
+    return fmt.Errorf("VAULT_TOKEN unset")
+  }
+
+	client, err := vault.NewClient(&vault.Config{ Address: addr })
 	if err != nil {
 		return err
 	}
+  client.SetToken(token)
 
 	for _, file := range args {
-		if err := vault.PatchSecretsInFile(file, r, client, inPlace); err != nil {
+		if err := subst.PatchSecretsInFile(file, r, client, inPlace); err != nil {
 			return err
 		}
 	}
