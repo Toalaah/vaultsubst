@@ -2,24 +2,24 @@
 
 `vaultsubst` is a tool for injecting and optionally formatting vault KV secrets
 into files. It acts similarly to `envsubst`, but instead of environment
-variables, it uses vault secrets. This is primarily useful if you have a large
+variables it uses vault secrets. This is primarily useful if you have a large
 number of arbitrary KV-paths that you want to query and don't necessarily know
 ahead of time and/or are unable to set environment variables. It works by
-extracting structured string based on a configurable delimiter which are then
-used to query and finally inject the correct secret into the file (or `stdout`
+extracting structured strings out of an input file which are then used to query
+and finally inject the correct secret into the file (more precisely, `stdout`
 by default).
 
 `vaultsubst` also supports basic formatting options which are applied
-sequentially to the secret prior to injection. The following transformations
+sequentially to each secret prior to injection. The following transformations
 are currently supported:
 
 - `upper`: convert secret to uppercase
 - `lower`: convert secret to lowercase
-- `base64`: encode in base-64
+- `base64`: encode in base64
 - `trim`: trim leading and trailing white-spaces
 
 As it is quite common that secrets are stored in base64, an additional option
-`b64` can be supplied separate from `transformations` to indicate that the
+`b64` can be supplied separately from `transformations` to indicate that the
 fetched secret should be *decoded* as such once fetched.
 
 ## Install
