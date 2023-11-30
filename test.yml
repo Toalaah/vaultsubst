@@ -1,0 +1,9 @@
+apiVersion: v1
+data:
+  username: "@@path=kv/storage/postgres/creds,field=username,b64=true,transformations=trim|upper@@"
+  password: "@@path=kv/storage/postgres/creds,field=password@@"
+  test: "static dont change"
+kind: Secret
+metadata:
+  name: supersecretdata
+type: Opaque
