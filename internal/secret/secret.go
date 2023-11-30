@@ -1,7 +1,6 @@
 package secret
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strings"
 
