@@ -46,20 +46,20 @@ func runCmd(ctx *cli.Context) error {
 		return cli.ShowAppHelp(ctx)
 	}
 
-  addr := os.Getenv("VAULT_ADDR")
-  token := os.Getenv("VAULT_TOKEN")
-  if addr == "" {
-    return fmt.Errorf("VAULT_ADDR unset")
-  }
-  if token == "" {
-    return fmt.Errorf("VAULT_TOKEN unset")
-  }
+	addr := os.Getenv("VAULT_ADDR")
+	token := os.Getenv("VAULT_TOKEN")
+	if addr == "" {
+		return fmt.Errorf("VAULT_ADDR unset")
+	}
+	if token == "" {
+		return fmt.Errorf("VAULT_TOKEN unset")
+	}
 
-	client, err := vault.NewClient(&vault.Config{ Address: addr })
+	client, err := vault.NewClient(&vault.Config{Address: addr})
 	if err != nil {
 		return err
 	}
-  client.SetToken(token)
+	client.SetToken(token)
 
 	for _, file := range args {
 		if err := subst.PatchSecretsInFile(file, r, client, inPlace); err != nil {

@@ -16,6 +16,7 @@ are currently supported:
 - `upper`: convert secret to uppercase
 - `lower`: convert secret to lowercase
 - `base64`: encode in base64
+- `base64d`: decode from base64
 - `trim`: trim leading and trailing white-spaces
 
 As it is quite common that secrets are stored in base64, an additional option
