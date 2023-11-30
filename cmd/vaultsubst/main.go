@@ -15,21 +15,13 @@ var inPlace bool
 var app = &cli.App{
 	Name:  "vaultsubst",
 	Usage: "inject and format vault secrets into files",
-
-	Description: `vaultsubst is a tool for injecting and optionally formatting vault KV secrets into files.
-
-It acts similarly to envsubst, but instead of environment variables, it uses
-vault secrets. This is primarily useful if you have a large number of
-arbitrary KV-paths that you want to query and don't necessarily know ahead of
-time and/or are unable to set environment variables.
-  `,
 	ArgsUsage:       "FILE [FILE...]",
 	Action:          runCmd,
 	HideHelpCommand: true,
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:        "delimiter",
-			Aliases:     []string{"d"},
+			Aliases:     []string{"d", "delim"},
 			Value:       "@@",
 			Usage:       "delimiter to use for injections",
 			Destination: &delimiter,
