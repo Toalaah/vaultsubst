@@ -14,28 +14,31 @@ var delimiter string
 
 var inPlace bool
 
-var app = &cli.App{
-	Name:            "vaultsubst",
-	Usage:           "inject and format vault secrets into files",
-	ArgsUsage:       "FILE [FILE...]",
-	Action:          runCmd,
-	HideHelpCommand: true,
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:        "delimiter",
-			Aliases:     []string{"d", "delim"},
-			Value:       "@@",
-			Usage:       "delimiter to use for injections",
-			Destination: &delimiter,
+func New(version string) *cli.App {
+	return &cli.App{
+		Name:            "vaultsubst",
+		Usage:           "inject and format vault secrets into files",
+		ArgsUsage:       "FILE [FILE...]",
+		Action:          runCmd,
+		Version:         version,
+		HideHelpCommand: true,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "delimiter",
+				Aliases:     []string{"d", "delim"},
+				Value:       "@@",
+				Usage:       "delimiter to use for injections",
+				Destination: &delimiter,
+			},
+			&cli.BoolFlag{
+				Name:        "in-place",
+				Aliases:     []string{"i"},
+				Value:       false,
+				Usage:       "modify files in place",
+				Destination: &inPlace,
+			},
 		},
-		&cli.BoolFlag{
-			Name:        "in-place",
-			Aliases:     []string{"i"},
-			Value:       false,
-			Usage:       "modify files in place",
-			Destination: &inPlace,
-		},
-	},
+	}
 }
 
 func runCmd(ctx *cli.Context) error {
@@ -68,8 +71,4 @@ func runCmd(ctx *cli.Context) error {
 	}
 
 	return nil
-}
-
-func Run(args []string) error {
-	return app.Run(args)
 }
