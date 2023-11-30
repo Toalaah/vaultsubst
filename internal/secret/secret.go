@@ -34,11 +34,10 @@ func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 	}
 
 	if spec.B64 {
-		b, err := base64.StdEncoding.DecodeString(res)
+		res, err = transformations.Apply("base64d", res)
 		if err != nil {
 			return "", err
 		}
-		res = string(b)
 	}
 
 	for _, t := range spec.Transformations {

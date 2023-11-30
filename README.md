@@ -21,7 +21,8 @@ are currently supported:
 
 As it is quite common that secrets are stored in base64, an additional option
 `b64` can be supplied separately from `transformations` to indicate that the
-fetched secret should be *decoded* as such once fetched.
+fetched secret should be *decoded* as such once fetched (this is equivalent to
+specifying `transformations=base64d`).
 
 ## Install
 
