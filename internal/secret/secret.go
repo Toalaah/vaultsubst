@@ -16,7 +16,7 @@ type SecretSpec struct {
 	Path            string   `mapstructure:"path"`
 	Field           string   `mapstructure:"field"`
 	B64             bool     `mapstructure:"b64"`
-	Transformations []string `mapstructure:"transformations"`
+	Transformations []string `mapstructure:"transform"`
 }
 
 // FormatSecret returns a formatted secret from "raw" Vault data, based on the

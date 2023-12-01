@@ -20,9 +20,9 @@ are currently supported:
 - `trim`: trim leading and trailing white-spaces
 
 As it is quite common that secrets are stored in base64, an additional option
-`b64` can be supplied separately from `transformations` to indicate that the
-fetched secret should be *decoded* as such once fetched (this is equivalent to
-specifying `transformations=base64d`).
+`b64` can be supplied separately from `transform` to indicate that the fetched
+secret should be *decoded* as such once fetched (this is equivalent to
+specifying `transform=base64d`).
 
 ## Install
 
@@ -36,7 +36,7 @@ go install github.com/toalaah/vaultsubst@latest
 $ cat test.yml
 apiVersion: v1
 data:
-  username: "@@path=kv/storage/postgres/creds,field=username,b64=true,transformations=trim|upper@@"
+  username: "@@path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper@@"
   password: "@@path=kv/storage/postgres/creds,field=password@@"
   test: "static dont change"
 kind: Secret
