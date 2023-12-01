@@ -71,13 +71,13 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		WeaklyTypedInput: true,
 		Result:           &result,
 		// Since we use commas as a field separator, arrays are assigned pipes
-		// instead. Semantially speaking, this may even be desireable as multiple
+		// instead. Semantically speaking, this may even be desirable as multiple
 		// transformations will be piped in order anyways.
 		DecodeHook: mapstructure.StringToSliceHookFunc("|"),
 	})
 
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	err = decoder.Decode(m)
