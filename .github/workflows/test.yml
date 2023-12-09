@@ -27,7 +27,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntuy-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Run linters
         uses: golangci/golangci-lint-action@v3
