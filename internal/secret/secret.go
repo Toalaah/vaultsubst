@@ -20,7 +20,7 @@ type SecretSpec struct {
 }
 
 // FormatSecret returns a formatted secret from "raw" Vault data, based on the
-// Spec's configured transformations
+// Spec's configured transformations.
 func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 	var (
 		res string
@@ -96,7 +96,7 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 	return result, nil
 }
 
-// Fetch fetches and returns a formatted vault secret string from a SecretSpec
+// Fetch fetches and returns a formatted vault secret string from a SecretSpec.
 func (spec *SecretSpec) Fetch(client *vault.Client) (string, error) {
 	path := strings.TrimPrefix(spec.Path, "kv/")
 	secret, err := client.Logical().Read("kv/data/" + path)
@@ -106,6 +106,9 @@ func (spec *SecretSpec) Fetch(client *vault.Client) (string, error) {
 	if secret == nil {
 		return "", fmt.Errorf("secret is nil")
 	}
-	data := secret.Data["data"].(map[string]interface{})
+	data, ok := secret.Data["data"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("could not parse data to map[string]")
+	}
 	return spec.FormatSecret(data)
 }
