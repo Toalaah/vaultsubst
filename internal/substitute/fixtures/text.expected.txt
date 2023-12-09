@@ -1,0 +1,3 @@
+The username is "POSTGRES"
+
+This value should not be substituted due to a different delimiter:  "$$path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper$$"

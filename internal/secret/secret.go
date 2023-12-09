@@ -20,7 +20,7 @@ type SecretSpec struct {
 }
 
 // FormatSecret returns a formatted secret from "raw" Vault data, based on the
-// Spec's configured transformations
+// Spec's configured transformations.
 func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 	var (
 		res string
@@ -29,7 +29,7 @@ func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 
 	res, ok := data[spec.Field].(string)
 	if !ok {
-		return "", fmt.Errorf("could not cast data at field %s to string\n", spec.Field)
+		return "", fmt.Errorf("could not cast data at field %s to string", spec.Field)
 	}
 
 	if spec.B64 {
@@ -80,12 +80,24 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		return nil, err
 	}
 
-	err = decoder.Decode(m)
-	return result, err
+	if err := decoder.Decode(m); err != nil {
+		return nil, err
+	}
+
+	// Some light validation on the decoded spec string. Without a path/field to
+	// query, we are kind of useless.
+	if result.Path == "" {
+		return nil, fmt.Errorf("Path may not be empty")
+	}
+	if result.Field == "" {
+		return nil, fmt.Errorf("Field may not be empty")
+	}
+
+	return result, nil
 }
 
-// Secret fetches and returns a formatted vault secret string from a SecretSpec
-func (spec *SecretSpec) Secret(client *vault.Client) (string, error) {
+// Fetch fetches and returns a formatted vault secret string from a SecretSpec.
+func (spec *SecretSpec) Fetch(client *vault.Client) (string, error) {
 	path := strings.TrimPrefix(spec.Path, "kv/")
 	secret, err := client.Logical().Read("kv/data/" + path)
 	if err != nil {
@@ -94,6 +106,9 @@ func (spec *SecretSpec) Secret(client *vault.Client) (string, error) {
 	if secret == nil {
 		return "", fmt.Errorf("secret is nil")
 	}
-	data := secret.Data["data"].(map[string]interface{})
+	data, ok := secret.Data["data"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("could not parse data to map[string]")
+	}
 	return spec.FormatSecret(data)
 }

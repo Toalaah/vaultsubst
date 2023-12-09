@@ -61,5 +61,5 @@ type: Opaque
 ## Roadmap
 
 - [ ] read from stdin if no file passed (or add check for '-' arg)
-- [ ] tests
-- [ ] basic CI
+- [x] tests
+- [x] basic CI
