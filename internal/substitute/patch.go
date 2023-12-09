@@ -24,7 +24,7 @@ func PatchSecretsInFile(file string, regexp *regexp.Regexp, client *vault.Client
 		if err != nil {
 			return err
 		}
-		secret, err := spec.Secret(client)
+		secret, err := spec.Fetch(client)
 		if err != nil {
 			return err
 		}
