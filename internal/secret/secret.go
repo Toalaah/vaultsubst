@@ -29,7 +29,7 @@ func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
 
 	res, ok := data[spec.Field].(string)
 	if !ok {
-		return "", fmt.Errorf("could not cast data at field %s to string\n", spec.Field)
+		return "", fmt.Errorf("could not cast data at field %s to string", spec.Field)
 	}
 
 	if spec.B64 {
@@ -80,18 +80,18 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		return nil, err
 	}
 
-  if err := decoder.Decode(m); err != nil {
-    return nil, err
-  }
+	if err := decoder.Decode(m); err != nil {
+		return nil, err
+	}
 
-  // Some light validation on the decoded spec string. Without a path/field to
-  // query, we are kind of useless.
-  if result.Path == "" {
-    return nil, fmt.Errorf("Path may not be empty")
-  }
-  if result.Field == "" {
-    return nil, fmt.Errorf("Field may not be empty")
-  }
+	// Some light validation on the decoded spec string. Without a path/field to
+	// query, we are kind of useless.
+	if result.Path == "" {
+		return nil, fmt.Errorf("Path may not be empty")
+	}
+	if result.Field == "" {
+		return nil, fmt.Errorf("Field may not be empty")
+	}
 
 	return result, nil
 }
