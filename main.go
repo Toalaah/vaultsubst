@@ -78,8 +78,20 @@ func runCmd(ctx *cli.Context) error {
 	client.SetToken(token)
 
 	for _, file := range args {
-		if err := subst.PatchSecretsInFile(file, r, client, inPlace); err != nil {
+		f, err := os.Open(file)
+		if err != nil {
 			return err
+		}
+
+		b, err := subst.PatchSecretsInFile(f, r, client)
+		if err != nil {
+			return err
+		}
+
+		if inPlace {
+			return os.WriteFile(file, b, 0644)
+		} else {
+			fmt.Fprint(os.Stdout, b)
 		}
 	}
 

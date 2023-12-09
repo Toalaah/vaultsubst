@@ -1,8 +1,7 @@
 package substitute
 
 import (
-	"fmt"
-	"os"
+	"io"
 	"regexp"
 	"strings"
 
@@ -11,10 +10,10 @@ import (
 	"github.com/toalaah/vaultsubst/internal/secret"
 )
 
-func PatchSecretsInFile(file string, regexp *regexp.Regexp, client *vault.Client, inPlace bool) error {
-	f, err := os.ReadFile(file)
+func PatchSecretsInFile(r io.Reader, regexp *regexp.Regexp, client *vault.Client) ([]byte, error) {
+	f, err := io.ReadAll(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	s := string(f)
 	matches := regexp.FindAllStringSubmatch(s, -1)
@@ -22,20 +21,14 @@ func PatchSecretsInFile(file string, regexp *regexp.Regexp, client *vault.Client
 		originalContent := match[0]
 		spec, err := secret.NewSecretSpec(match[1])
 		if err != nil {
-			return err
+			return nil, err
 		}
 		secret, err := spec.Fetch(client)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		s = strings.Replace(s, originalContent, secret, -1)
 	}
 
-	if inPlace {
-		return os.WriteFile(file, []byte(s), 0644)
-	} else {
-		fmt.Fprint(os.Stdout, s)
-	}
-
-	return nil
+	return []byte(s), nil
 }

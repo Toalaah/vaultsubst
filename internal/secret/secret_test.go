@@ -2,13 +2,10 @@ package secret
 
 import (
 	"errors"
-	"net"
 	"testing"
 
-	"github.com/hashicorp/vault/api"
-	"github.com/hashicorp/vault/http"
-	"github.com/hashicorp/vault/vault"
 	"github.com/stretchr/testify/assert"
+	"github.com/toalaah/vaultsubst/testutil"
 )
 
 func TestSecretSpecParsing(t *testing.T) {
@@ -71,7 +68,7 @@ func TestSecretSpecParsing(t *testing.T) {
 func TestSecretFetching(t *testing.T) {
 	assert := assert.New(t)
 
-	client, ln := newTestVault(t)
+	client, ln := testutil.NewTestVault(t)
 	defer ln.Close()
 
 	cases := []struct {
@@ -111,41 +108,4 @@ func TestSecretFetching(t *testing.T) {
 		assert.Equal(c.ExpectedValue, secret)
 		assert.Equal(c.ExpectedErr, err)
 	}
-}
-
-// Adapted from https://stackoverflow.com/questions/57771228/mocking-hashicorp-vault-in-go
-// Creates an unsealed in-memory vault and adds a static KV secret to `kv/storage/postgres/creds`
-func newTestVault(t *testing.T) (*api.Client, net.Listener) {
-	t.Helper()
-
-	core, keyShares, rootToken := vault.TestCoreUnsealed(t)
-	_ = keyShares
-
-	ln, addr := http.TestServer(t, core)
-
-	conf := api.DefaultConfig()
-	conf.Address = addr
-
-	client, err := api.NewClient(conf)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	client.SetToken(rootToken)
-
-	err = client.Sys().Mount("kv/", &api.MountInput{Type: "kv-v2"})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	_, err = client.Logical().Write("kv/data/storage/postgres/creds", map[string]interface{}{
-		"data": map[string]interface{}{
-			"username": "cG9zdGdyZXM=",
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return client, ln
 }
