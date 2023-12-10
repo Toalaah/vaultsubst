@@ -60,14 +60,14 @@ func runCmd(ctx *cli.Context) error {
 	args := ctx.Args().Slice()
 
 	if len(args) == 0 {
-		// Check if stdin no arguments were passed
+		// Fallback to stdin if no arguments were passed
 		has, err := hasStdin()
 		if err != nil {
 			return err
 		}
 		if has {
 			if inPlace {
-				fmt.Fprintf(os.Stderr, "ignoring in-place flag")
+				fmt.Fprintf(os.Stderr, "ignoring in-place flag\n")
 				inPlace = false
 			}
 			args = append(args, "/dev/stdin")

@@ -6,7 +6,7 @@ proc=$$
 dummy_fifo=$(mktemp --dry-run)
 mkfifo $dummy_fifo
 
-echo Container ID: $container
+echo "Container ID: $container"
 
 token=""
 while [ -z "$token" ]; do
@@ -24,7 +24,7 @@ vault kv put kv/storage/postgres/creds \
   username="$(echo -n postgres | base64)" \
   password="4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd" >/dev/null
 
-echo -e "Done"
+echo "Done"
 
 cat << EOF
 
