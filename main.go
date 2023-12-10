@@ -55,12 +55,25 @@ func init() {
 }
 
 func runCmd(ctx *cli.Context) error {
-  escapedDelim := regexp.QuoteMeta(delimiter)
+	escapedDelim := regexp.QuoteMeta(delimiter)
 	r := regexp.MustCompile(fmt.Sprintf(`%s(?P<Data>.*)%s`, escapedDelim, escapedDelim))
 	args := ctx.Args().Slice()
 
 	if len(args) == 0 {
-		return cli.ShowAppHelp(ctx)
+		// Check if stdin no arguments were passed
+		has, err := hasStdin()
+		if err != nil {
+			return err
+		}
+		if has {
+			if inPlace {
+				fmt.Fprintf(os.Stderr, "ignoring in-place flag")
+				inPlace = false
+			}
+			args = append(args, "/dev/stdin")
+		} else {
+			return cli.ShowAppHelp(ctx)
+		}
 	}
 
 	addr := os.Getenv("VAULT_ADDR")
@@ -97,4 +110,12 @@ func runCmd(ctx *cli.Context) error {
 	}
 
 	return nil
+}
+
+func hasStdin() (bool, error) {
+	f, err := os.Stdin.Stat()
+	if err != nil {
+		return false, err
+	}
+	return (f.Mode()&os.ModeCharDevice == 0), nil
 }

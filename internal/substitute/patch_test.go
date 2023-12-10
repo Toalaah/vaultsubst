@@ -19,7 +19,7 @@ func TestPatchFile(t *testing.T) {
 
 	defer ln.Close()
 
-	expected, err := os.ReadFile("./fixtures/text.expected.txt")
+	expected, err := os.ReadFile("./fixtures/test.expected.txt")
 	assert.Nil(err)
 
 	f, err := os.Open("./fixtures/test.txt")

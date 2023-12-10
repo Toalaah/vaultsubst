@@ -60,6 +60,6 @@ type: Opaque
 
 ## Roadmap
 
-- [ ] read from stdin if no file passed (or add check for '-' arg)
+- [x] read from stdin if no file passed (or add check for '-' arg)
 - [x] tests
 - [x] basic CI
