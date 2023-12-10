@@ -91,7 +91,7 @@ func runCmd(ctx *cli.Context) error {
 		if inPlace {
 			return os.WriteFile(file, b, 0644)
 		} else {
-			fmt.Fprint(os.Stdout, b)
+			fmt.Fprint(os.Stdout, string(b))
 		}
 	}
 
