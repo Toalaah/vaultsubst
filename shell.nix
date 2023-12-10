@@ -4,5 +4,6 @@ with pkgs;
     buildInputs = [
       go
       golangci-lint
+      vault
     ];
   }
