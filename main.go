@@ -55,7 +55,8 @@ func init() {
 }
 
 func runCmd(ctx *cli.Context) error {
-	r := regexp.MustCompile(fmt.Sprintf(`%s(?P<Data>.*)%s`, delimiter, delimiter))
+  escapedDelim := regexp.QuoteMeta(delimiter)
+	r := regexp.MustCompile(fmt.Sprintf(`%s(?P<Data>.*)%s`, escapedDelim, escapedDelim))
 	args := ctx.Args().Slice()
 
 	if len(args) == 0 {
