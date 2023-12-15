@@ -2,7 +2,7 @@
 with pkgs;
   mkShell {
     buildInputs = [
-      go
+      go_1_21
       golangci-lint
       vault
     ];
