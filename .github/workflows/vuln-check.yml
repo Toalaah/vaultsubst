@@ -5,6 +5,7 @@ on:
   schedule:
     # https://crontab.guru/#30_12_*_*_1 "At 12:30 on Monday"
     - cron: '30 12 * * 1'
+  pull_request:
   push:
     branches: [ master ]
 
