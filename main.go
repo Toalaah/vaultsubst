@@ -5,8 +5,8 @@ import (
 	"os"
 	"regexp"
 
-	vault "github.com/hashicorp/vault/api"
 	subst "github.com/toalaah/vaultsubst/internal/substitute"
+	"github.com/toalaah/vaultsubst/internal/vault"
 	"github.com/urfave/cli/v2"
 
 	_ "embed"
@@ -76,20 +76,10 @@ func runCmd(ctx *cli.Context) error {
 		}
 	}
 
-	addr := os.Getenv("VAULT_ADDR")
-	token := os.Getenv("VAULT_TOKEN")
-	if addr == "" {
-		return fmt.Errorf("VAULT_ADDR unset")
-	}
-	if token == "" {
-		return fmt.Errorf("VAULT_TOKEN unset")
-	}
-
-	client, err := vault.NewClient(&vault.Config{Address: addr})
+	client, err := vault.NewClient()
 	if err != nil {
 		return err
 	}
-	client.SetToken(token)
 
 	for _, file := range args {
 		f, err := os.Open(file)

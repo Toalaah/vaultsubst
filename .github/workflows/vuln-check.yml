@@ -1,0 +1,18 @@
+# See: https://google.github.io/osv-scanner/github-action/
+name: OSV-Scanner PR Scan
+
+on:
+  schedule:
+    # https://crontab.guru/#30_12_*_*_1 "At 12:30 on Monday"
+    - cron: '30 12 * * 1'
+  pull_request:
+  push:
+    branches: [ master ]
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  scan-pr:
+    uses: "google/osv-scanner/.github/workflows/osv-scanner-reusable-pr.yml@main"
