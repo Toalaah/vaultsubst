@@ -13,7 +13,7 @@ type FakeVaultClient struct {
 func (c *FakeVaultClient) Read(path string) (*api.Secret, error) {
 	data := c.data[path]
 	if data == nil {
-		// Seems to be in line with vault api when making calls to non-existant paths
+		// Seems to be in line with vault api when making calls to non-existent paths
 		return nil, nil
 	}
 	return &api.Secret{Data: data}, nil
