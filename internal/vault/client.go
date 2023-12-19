@@ -9,14 +9,12 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// Client simply wraps a vault client. If fullfills the SecretReader
-// interface.
+// Client simply wraps a vault client. It satisfies the SecretReader interface.
 type Client struct {
 	*api.Client
 }
 
-// SecretReader is an interface which groups anything able to read and write
-// vault data.
+// SecretReader is an interface describing anything able to read vault data.
 type SecretReader interface {
 	Read(path string) (*api.Secret, error)
 }
@@ -25,10 +23,9 @@ func (c *Client) Read(path string) (*api.Secret, error) {
 	return c.Logical().Read(path)
 }
 
-// NewClient returns a new vault client. It handles address and token
-// initialization. It returns any errors encountered during construction of
-// it's nested client or if it is unable to properly configure the client
-// token.
+// NewClient returns a new vault client. Address and token initialization are
+// handled internally. Any errors encountered during initialization (for
+// instance due to lacking environment variables) are returned to the caller.
 func NewClient() (*Client, error) {
 	c := &Client{}
 	vaultClient, err := api.NewClient(nil)
