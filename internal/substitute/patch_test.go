@@ -15,9 +15,7 @@ var defaultRegex = regexp.MustCompile(fmt.Sprintf(`%s(?P<Data>.*)%s`, "@@", "@@"
 func TestPatchFile(t *testing.T) {
 	assert := assert.New(t)
 
-	client, ln := testutil.NewTestVault(t)
-
-	defer ln.Close()
+	client := testutil.NewTestVault(t)
 
 	expected, err := os.ReadFile("./fixtures/test.expected.txt")
 	assert.Nil(err)

@@ -68,8 +68,7 @@ func TestSecretSpecParsing(t *testing.T) {
 func TestSecretFetching(t *testing.T) {
 	assert := assert.New(t)
 
-	client, ln := testutil.NewTestVault(t)
-	defer ln.Close()
+	client := testutil.NewTestVault(t)
 
 	cases := []struct {
 		Spec          *SecretSpec

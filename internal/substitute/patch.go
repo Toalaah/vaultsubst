@@ -5,12 +5,11 @@ import (
 	"regexp"
 	"strings"
 
-	vault "github.com/hashicorp/vault/api"
-
 	"github.com/toalaah/vaultsubst/internal/secret"
+	"github.com/toalaah/vaultsubst/internal/vault"
 )
 
-func PatchSecretsInFile(r io.Reader, regexp *regexp.Regexp, client *vault.Client) ([]byte, error) {
+func PatchSecretsInFile(r io.Reader, regexp *regexp.Regexp, client vault.SecretReader) ([]byte, error) {
 	f, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err

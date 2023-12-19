@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	vault "github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
 	"github.com/toalaah/vaultsubst/internal/transformations"
+	"github.com/toalaah/vaultsubst/internal/vault"
 )
-
-type VaultData map[string]interface{}
 
 // SecretSpec represents a single secret in a file to be patched.
 type SecretSpec struct {
@@ -21,7 +19,7 @@ type SecretSpec struct {
 
 // FormatSecret returns a formatted secret from "raw" Vault data, based on the
 // Spec's configured transformations.
-func (spec *SecretSpec) FormatSecret(data VaultData) (string, error) {
+func (spec *SecretSpec) FormatSecret(data map[string]interface{}) (string, error) {
 	var (
 		res string
 		err error
@@ -97,9 +95,9 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 }
 
 // Fetch fetches and returns a formatted vault secret string from a SecretSpec.
-func (spec *SecretSpec) Fetch(client *vault.Client) (string, error) {
+func (spec *SecretSpec) Fetch(client vault.SecretReader) (string, error) {
 	path := strings.TrimPrefix(spec.Path, "kv/")
-	secret, err := client.Logical().Read("kv/data/" + path)
+	secret, err := client.Read("kv/data/" + path)
 	if err != nil {
 		return "", err
 	}
