@@ -11,11 +11,11 @@ import (
 )
 
 func TestPatchFileGeneric(t *testing.T) {
-  testPatchFileImpl(t, "generic")
+	testPatchFileImpl(t, "generic")
 }
 
 func TestPatchFileMultipleMatchSingleLine(t *testing.T) {
-  testPatchFileImpl(t, "multiple-match-single-line")
+	testPatchFileImpl(t, "multiple-match-single-line")
 }
 
 func testPatchFileImpl(t *testing.T, file string) {
