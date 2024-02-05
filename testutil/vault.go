@@ -31,6 +31,7 @@ func NewTestVault(t *testing.T) *FakeVaultClient {
 	c.data["kv/data/storage/postgres/creds"] = map[string]interface{}{
 		"data": map[string]interface{}{
 			"username": "cG9zdGdyZXM=",
+			"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
 		},
 	}
 

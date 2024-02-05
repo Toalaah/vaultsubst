@@ -1,0 +1,1 @@
+username=@@path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper@@,password=@@path=kv/storage/postgres/creds,field=password@@

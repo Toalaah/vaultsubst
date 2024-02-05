@@ -10,20 +10,26 @@ import (
 	"github.com/toalaah/vaultsubst/testutil"
 )
 
-var defaultRegex = regexp.MustCompile(fmt.Sprintf(`%s(?P<Data>.*)%s`, "@@", "@@"))
+func TestPatchFileGeneric(t *testing.T) {
+  testPatchFileImpl(t, "generic")
+}
 
-func TestPatchFile(t *testing.T) {
+func TestPatchFileMultipleMatchSingleLine(t *testing.T) {
+  testPatchFileImpl(t, "multiple-match-single-line")
+}
+
+func testPatchFileImpl(t *testing.T, file string) {
 	assert := assert.New(t)
 
 	client := testutil.NewTestVault(t)
 
-	expected, err := os.ReadFile("./fixtures/test.expected.txt")
+	expected, err := os.ReadFile(fmt.Sprintf("./fixtures/%s.expected.txt", file))
 	assert.Nil(err)
 
-	f, err := os.Open("./fixtures/test.txt")
+	f, err := os.Open(fmt.Sprintf("./fixtures/%s.txt", file))
 	assert.Nil(err)
 
-	b, err := PatchSecretsInFile(f, defaultRegex, client)
+	b, err := PatchSecretsInFile(f, regexp.MustCompile(`@@(.*?)@@`), client)
 	assert.Nil(err)
 
 	assert.Equal(expected, b)
