@@ -36,9 +36,18 @@ func TestSecretSpecParsing(t *testing.T) {
 			ExpectedErr: nil,
 		},
 		{
-			SpecStr:       "path = kv/storage/postgres/creds,,fieldpassword",
+			SpecStr: "path =       kv/storage/postgres/creds ,    field= username,b64=true",
+			ExpectedValue: &SecretSpec{
+				Path:  "kv/storage/postgres/creds",
+				Field: "username",
+				B64:   true,
+			},
+			ExpectedErr: nil,
+		},
+		{
+			SpecStr:       "path=kv/storage/postgres/creds,,fieldpassword",
 			ExpectedValue: nil,
-			ExpectedErr:   errors.New("Unable to parse option: path = kv/storage/postgres/creds,,fieldpassword (value )"),
+			ExpectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,,fieldpassword (value )"),
 		},
 		{
 			SpecStr:       "field=username,b64=true,transform=trim|upper",

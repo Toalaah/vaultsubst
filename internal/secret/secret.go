@@ -50,6 +50,7 @@ func (spec *SecretSpec) FormatSecret(data map[string]interface{}) (string, error
 // NewSecretSpec constructs and returns a new SecretSpec from a structured
 // string.
 func NewSecretSpec(s string) (*SecretSpec, error) {
+	s = strings.ReplaceAll(s, " ", "")
 	// ["path=...", "field=..."]
 	specs := strings.Split(s, ",")
 
