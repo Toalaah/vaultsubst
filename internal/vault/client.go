@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path"
@@ -16,11 +17,11 @@ type Client struct {
 
 // SecretReader is an interface describing anything able to read vault data.
 type SecretReader interface {
-	Read(path string) (*api.Secret, error)
+	Read(path string) (*api.KVSecret, error)
 }
 
-func (c *Client) Read(path string) (*api.Secret, error) {
-	return c.Logical().Read(path)
+func (c *Client) Read(path string) (*api.KVSecret, error) {
+  return c.KVv2("kv").Get(context.Background(), path)
 }
 
 // NewClient returns a new vault client. Address and token initialization are

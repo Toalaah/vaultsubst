@@ -7,16 +7,16 @@ import (
 )
 
 type FakeVaultClient struct {
-	data map[string]map[string]interface{}
+	kvStore map[string](map[string]interface{})
 }
 
-func (c *FakeVaultClient) Read(path string) (*api.Secret, error) {
-	data := c.data[path]
+func (c *FakeVaultClient) Read(path string) (*api.KVSecret, error) {
+	data := c.kvStore[path]
 	if data == nil {
 		// Seems to be in line with vault api when making calls to non-existent paths
 		return nil, nil
 	}
-	return &api.Secret{Data: data}, nil
+	return &api.KVSecret{Data: data}, nil
 }
 
 // NewTestVault creates an unsealed in-memory vault and adds a static KV
@@ -25,14 +25,12 @@ func (c *FakeVaultClient) Read(path string) (*api.Secret, error) {
 func NewTestVault(t *testing.T) *FakeVaultClient {
 	t.Helper()
 	c := &FakeVaultClient{}
-	c.data = make(map[string]map[string]interface{})
+	c.kvStore = make(map[string](map[string]interface{}))
 
 	// populate with fake secret
-	c.data["kv/data/storage/postgres/creds"] = map[string]interface{}{
-		"data": map[string]interface{}{
-			"username": "cG9zdGdyZXM=",
-			"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
-		},
+	c.kvStore["storage/postgres/creds"] = map[string]interface{}{
+		"username": "cG9zdGdyZXM=",
+		"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
 	}
 
 	return c
