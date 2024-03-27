@@ -21,7 +21,7 @@ type SecretReader interface {
 }
 
 func (c *Client) Read(path string) (*api.KVSecret, error) {
-  return c.KVv2("kv").Get(context.Background(), path)
+	return c.KVv2("kv").Get(context.Background(), path)
 }
 
 // NewClient returns a new vault client. Address and token initialization are

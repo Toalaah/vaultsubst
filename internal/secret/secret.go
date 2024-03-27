@@ -97,10 +97,12 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 
 // Fetch fetches and returns a formatted vault secret string from a SecretSpec.
 func (spec *SecretSpec) Fetch(client vault.SecretReader) (string, error) {
-  // If path starts with kv/data or kv/, remove the prefixes. They are added by
-  // the client KV reader.
-	path := strings.TrimPrefix(spec.Path, "kv/data")
-	path = strings.TrimPrefix(spec.Path, "kv/")
+	var path string
+	// If path starts with kv/data/ or kv/, remove the prefixes. They are added
+	// by the client KV reader.
+	for _, prefix := range []string{"kv/data/", "kv/"} {
+		path = strings.TrimPrefix(spec.Path, prefix)
+	}
 	secret, err := client.Read(path)
 	if err != nil {
 		return "", err
