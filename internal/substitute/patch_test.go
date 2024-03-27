@@ -1,4 +1,4 @@
-package substitute
+package substitute_test
 
 import (
 	"fmt"

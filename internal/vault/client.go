@@ -10,18 +10,33 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// Client simply wraps a vault client. It satisfies the SecretReader interface.
+// Client thinly wraps a vault client. It provides a minimal subset of
+// functionality required for interacting with KV stores.
 type Client struct {
-	*api.Client
+	client *api.Client
 }
 
-// SecretReader is an interface describing anything able to read vault data.
-type SecretReader interface {
-	Read(path string) (*api.KVSecret, error)
-}
+const (
+	KVv1 = "v1"
+	KVv2 = "v2"
+)
 
-func (c *Client) Read(path string) (*api.KVSecret, error) {
-	return c.KVv2("kv").Get(context.Background(), path)
+func (c *Client) ReadKV(spec *SecretSpec) (*api.KVSecret, error) {
+	split := strings.Split(spec.Path, "/")
+	mnt := split[0]
+	// Extra check for second element being empty cause both 'kv/' and 'kv'
+	// should be invalid paths.
+	if len(split) < 2 || split[1] == "" {
+		return nil, fmt.Errorf("no path to query using mountpoint %s", mnt)
+	}
+	pth := strings.TrimPrefix(spec.Path, mnt+"/")
+	switch spec.MountVersion {
+	case KVv1:
+		return c.client.KVv1(mnt).Get(context.Background(), pth)
+	case KVv2:
+		return c.client.KVv2(mnt).Get(context.Background(), pth)
+	}
+	return nil, fmt.Errorf("secret %+v: unknown kv version %s", spec, spec.MountVersion)
 }
 
 // NewClient returns a new vault client. Address and token initialization are
@@ -33,7 +48,7 @@ func NewClient() (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.Client = vaultClient
+	c.client = vaultClient
 
 	// Try to read from ~/.vault-token if env var is not supplied
 	if os.Getenv("VAULT_TOKEN") == "" {
@@ -45,7 +60,8 @@ func NewClient() (*Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("VAULT_TOKEN unset and/or failed to read token from ~/.vault-token: %s", err)
 		}
-		c.SetToken(strings.TrimSuffix(string(token), "\n"))
+		c.client.SetToken(strings.TrimSuffix(string(token), "\n"))
 	}
+
 	return c, nil
 }
