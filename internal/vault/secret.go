@@ -1,12 +1,13 @@
-package secret
+package vault
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
 	"github.com/toalaah/vaultsubst/internal/transformations"
-	"github.com/toalaah/vaultsubst/internal/vault"
 )
 
 // SecretSpec represents a single secret in a file to be patched.
@@ -14,18 +15,23 @@ type SecretSpec struct {
 	Path            string   `mapstructure:"path"`
 	Field           string   `mapstructure:"field"`
 	B64             bool     `mapstructure:"b64"`
+	MountVersion    string   `mapstructure:"ver"`
 	Transformations []string `mapstructure:"transform"`
 }
 
-// FormatSecret returns a formatted secret from "raw" Vault data, based on the
-// Spec's configured transformations.
-func (spec *SecretSpec) FormatSecret(data map[string]interface{}) (string, error) {
+// FormatSecret returns a formatted secret value field from a vault KV secret,
+// based on the spec's internally configured transformations.
+func (spec *SecretSpec) FormatSecret(secret *api.KVSecret) (string, error) {
 	var (
 		res string
 		err error
 	)
 
-	res, ok := data[spec.Field].(string)
+	if secret == nil {
+		return "", errors.New("secret is nil")
+	}
+
+	res, ok := secret.Data[spec.Field].(string)
 	if !ok {
 		return "", fmt.Errorf("could not cast data at field %s to string", spec.Field)
 	}
@@ -47,8 +53,7 @@ func (spec *SecretSpec) FormatSecret(data map[string]interface{}) (string, error
 	return res, nil
 }
 
-// NewSecretSpec constructs and returns a new SecretSpec from a structured
-// string.
+// NewSecretSpec constructs and returns a new SecretSpec from a structured string s
 func NewSecretSpec(s string) (*SecretSpec, error) {
 	s = strings.ReplaceAll(s, " ", "")
 	// ["path=...", "field=..."]
@@ -91,23 +96,10 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 	if result.Field == "" {
 		return nil, fmt.Errorf("Field may not be empty")
 	}
+	// Default to KVv2 unless specified otherwise
+	if result.MountVersion == "" {
+		result.MountVersion = KVv2
+	}
 
 	return result, nil
-}
-
-// Fetch fetches and returns a formatted vault secret string from a SecretSpec.
-func (spec *SecretSpec) Fetch(client vault.SecretReader) (string, error) {
-	path := strings.TrimPrefix(spec.Path, "kv/")
-	secret, err := client.Read("kv/data/" + path)
-	if err != nil {
-		return "", err
-	}
-	if secret == nil {
-		return "", fmt.Errorf("secret is nil")
-	}
-	data, ok := secret.Data["data"].(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("could not parse data to map[string]")
-	}
-	return spec.FormatSecret(data)
 }
