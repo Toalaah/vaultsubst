@@ -53,7 +53,7 @@ func (spec *SecretSpec) FormatSecret(secret *api.KVSecret) (string, error) {
 	return res, nil
 }
 
-// NewSecretSpec constructs and returns a new SecretSpec from a structured string s
+// NewSecretSpec constructs and returns a new SecretSpec from a structured string s.
 func NewSecretSpec(s string) (*SecretSpec, error) {
 	s = strings.ReplaceAll(s, " ", "")
 	// ["path=...", "field=..."]

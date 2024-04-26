@@ -151,6 +151,7 @@ func (m *mockVaultClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	if s == nil {
 		return nil, err
 	}
+	// nolint:forcetypeassert
 	return s.(*api.KVSecret), err
 }
 
@@ -161,5 +162,6 @@ func (m *mockVaultClient) ReadKVv2(mount, path string) (*api.KVSecret, error) {
 	if s == nil {
 		return nil, err
 	}
+	// nolint:forcetypeassert
 	return s.(*api.KVSecret), err
 }

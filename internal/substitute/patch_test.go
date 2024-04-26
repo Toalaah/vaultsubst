@@ -50,10 +50,12 @@ type mockVaultClient struct{ mock.Mock }
 
 func (m *mockVaultClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
+	// nolint:forcetypeassert
 	return args.Get(0).(*api.KVSecret), args.Error(1)
 }
 
 func (m *mockVaultClient) ReadKVv2(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
+	// nolint:forcetypeassert
 	return args.Get(0).(*api.KVSecret), args.Error(1)
 }
