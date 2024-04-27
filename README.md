@@ -57,9 +57,20 @@ type: Opaque
 
 ```
 
+## Interacting with KVv1 Backends
 
-## Roadmap
+`vaultsubst` supports fetching secrets from both `KVv1` and `KVv2` stores. By
+default, a `v2` backend is assumed, but this behavior can be overwritten on a
+per-secret basis by specifying `ver=v1` in the template string, for example:
+`@@path=kv1/storage/postgres/creds,field=username,ver=v1@@`
 
-- [x] read from stdin if no file passed (or add check for '-' arg)
-- [x] tests
-- [x] basic CI
+## Contributing
+
+Contributions (PRs, issues, etc.) are welcome. Please note that the minimum
+required Go version for building `vaultsubst` is `1.21`. Only the last two
+major Go versions are officially supported and tested against CI, as such there
+are no guarantees for any older versions.
+
+# License
+
+This project is licensed under the terms of the MIT license.
