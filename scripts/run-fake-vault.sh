@@ -3,9 +3,6 @@
 container=$(docker run --rm -d -p 8200:8200 vault:1.13.3)
 proc=$$
 
-dummy_fifo=$(mktemp --dry-run)
-mkfifo $dummy_fifo
-
 echo "Container ID: $container"
 
 token=""
@@ -40,11 +37,10 @@ EOF
 cleanup() {
   echo -e "\nCaught interrupt, performing cleanup..."
   docker stop $container 2>/dev/null 1>&2
-  rm $dummy_fifo
   echo "Done"
   exit 0
 }
 
-trap cleanup SIGINT
+trap cleanup INT
 
-read < $dummy_fifo
+sleep infinity
