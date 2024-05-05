@@ -5,7 +5,7 @@ import (
 	"os"
 	"regexp"
 
-	subst "github.com/toalaah/vaultsubst/internal/substitute"
+	"github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/toalaah/vaultsubst/internal/vault"
 	"github.com/urfave/cli/v2"
 
@@ -84,7 +84,7 @@ func runCmd(ctx *cli.Context) error {
 			return err
 		}
 
-		b, err := subst.PatchSecretsInFile(f, r, client)
+		b, err := substitute.PatchSecrets(f, r, client)
 		if err != nil {
 			return err
 		}

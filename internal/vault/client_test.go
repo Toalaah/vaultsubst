@@ -69,14 +69,14 @@ func TestClientReadKV(t *testing.T) {
 			"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
 		},
 	}
-	m := &mockVaultClient{}
+	m := &mockKVReader{}
 	m.
 		On("ReadKVv1", "kv", "storage/postgres/creds").Return(secretStub, nil).
 		On("ReadKVv2", "kv", "storage/postgres/creds").Return(secretStub, nil).
 		On("ReadKVv1", mock.Anything, mock.Anything).Return(nil, nil).
 		On("ReadKVv2", mock.Anything, mock.Anything).Return(nil, nil)
 
-	client := &vault.Client{Client: m}
+	client := &vault.Client{KVReader: m}
 
 	cases := []struct {
 		SecretSpec    *vault.SecretSpec
@@ -142,9 +142,9 @@ func prepareTestCaseEnv(env map[string]string) error {
 	return nil
 }
 
-type mockVaultClient struct{ mock.Mock }
+type mockKVReader struct{ mock.Mock }
 
-func (m *mockVaultClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
+func (m *mockKVReader) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
 	s := args.Get(0)
 	err := args.Error(1)
@@ -155,7 +155,7 @@ func (m *mockVaultClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	return s.(*api.KVSecret), err
 }
 
-func (m *mockVaultClient) ReadKVv2(mount, path string) (*api.KVSecret, error) {
+func (m *mockKVReader) ReadKVv2(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
 	s := args.Get(0)
 	err := args.Error(1)

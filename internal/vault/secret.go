@@ -55,12 +55,13 @@ func (spec *SecretSpec) FormatSecret(secret *api.KVSecret) (string, error) {
 
 // NewSecretSpec constructs and returns a new SecretSpec from a structured string s.
 func NewSecretSpec(s string) (*SecretSpec, error) {
+	// "path = ...,field = ..." => "path=...,field=..."
 	s = strings.ReplaceAll(s, " ", "")
-	// ["path=...", "field=..."]
-	specs := strings.Split(s, ",")
+	// "path=...,field=..." => ["path=...", "field=..."]
+	attrs := strings.Split(s, ",")
 
-	m := make(map[string]interface{})
-	for _, v := range specs {
+	m := make(map[string]string)
+	for _, v := range attrs {
 		// "path=..." => ["path", "..."]
 		kv := strings.Split(v, "=")
 		if len(kv) != 2 {
@@ -69,11 +70,11 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		m[kv[0]] = kv[1]
 	}
 
-	result := &SecretSpec{}
+	spec := new(SecretSpec)
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		WeaklyTypedInput: true,
-		Result:           &result,
+		Result:           &spec,
 		// Since we use commas as a field separator, arrays are assigned pipes
 		// instead. Semantically speaking, this may even be desirable as multiple
 		// transformations will be piped in order anyways.
@@ -90,16 +91,16 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 
 	// Some light validation on the decoded spec string. Without a path/field to
 	// query, we are kind of useless.
-	if result.Path == "" {
+	if spec.Path == "" {
 		return nil, fmt.Errorf("Path may not be empty")
 	}
-	if result.Field == "" {
+	if spec.Field == "" {
 		return nil, fmt.Errorf("Field may not be empty")
 	}
 	// Default to KVv2 unless specified otherwise
-	if result.MountVersion == "" {
-		result.MountVersion = KVv2
+	if spec.MountVersion == "" {
+		spec.MountVersion = KVv2
 	}
 
-	return result, nil
+	return spec, nil
 }

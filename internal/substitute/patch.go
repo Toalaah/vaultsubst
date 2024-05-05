@@ -8,7 +8,7 @@ import (
 	"github.com/toalaah/vaultsubst/internal/vault"
 )
 
-func PatchSecretsInFile(r io.Reader, regexp *regexp.Regexp, client *vault.Client) ([]byte, error) {
+func PatchSecrets(r io.Reader, regexp *regexp.Regexp, client *vault.Client) ([]byte, error) {
 	f, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
@@ -31,6 +31,5 @@ func PatchSecretsInFile(r io.Reader, regexp *regexp.Regexp, client *vault.Client
 		}
 		s = strings.Replace(s, originalContent, secret, -1)
 	}
-
 	return []byte(s), nil
 }

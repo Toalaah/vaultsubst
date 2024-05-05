@@ -13,7 +13,7 @@ import (
 // Client thinly wraps a vault client. It provides a minimal subset of
 // functionality required for interacting with KV stores.
 type Client struct {
-	Client KVReader
+	KVReader KVReader
 }
 
 const (
@@ -26,16 +26,14 @@ type KVReader interface {
 	ReadKVv2(mount, path string) (*api.KVSecret, error)
 }
 
-type apiClient struct {
-	reader *api.Client
-}
+type apiClient struct{ *api.Client }
 
 func (c *apiClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
-	return c.reader.KVv1(mount).Get(context.Background(), path)
+	return c.KVv1(mount).Get(context.Background(), path)
 }
 
 func (c *apiClient) ReadKVv2(mount, path string) (*api.KVSecret, error) {
-	return c.reader.KVv2(mount).Get(context.Background(), path)
+	return c.KVv2(mount).Get(context.Background(), path)
 }
 
 func (c *Client) ReadKV(spec *SecretSpec) (*api.KVSecret, error) {
@@ -49,9 +47,9 @@ func (c *Client) ReadKV(spec *SecretSpec) (*api.KVSecret, error) {
 	pth := strings.TrimPrefix(spec.Path, mnt+"/")
 	switch spec.MountVersion {
 	case KVv1:
-		return c.Client.ReadKVv1(mnt, pth)
+		return c.KVReader.ReadKVv1(mnt, pth)
 	case KVv2:
-		return c.Client.ReadKVv2(mnt, pth)
+		return c.KVReader.ReadKVv2(mnt, pth)
 	}
 	return nil, fmt.Errorf("secret %+v: unknown kv version %s", spec, spec.MountVersion)
 }
@@ -80,6 +78,6 @@ func NewClient() (*Client, error) {
 		api.SetToken(strings.TrimSuffix(string(token), "\n"))
 	}
 
-	c.Client = &apiClient{reader: api}
+	c.KVReader = &apiClient{api}
 	return c, nil
 }

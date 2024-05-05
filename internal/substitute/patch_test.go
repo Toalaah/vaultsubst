@@ -1,9 +1,10 @@
 package substitute_test
 
 import (
+	"errors"
 	"fmt"
-	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/vault/api"
@@ -13,49 +14,97 @@ import (
 	"github.com/toalaah/vaultsubst/internal/vault"
 )
 
-func TestPatchFileGeneric(t *testing.T) {
-	testPatchFileImpl(t, "generic")
-}
-
-func TestPatchFileMultipleMatchSingleLine(t *testing.T) {
-	testPatchFileImpl(t, "multiple-match-single-line")
-}
-
-func testPatchFileImpl(t *testing.T, file string) {
+func TestSecretPatching(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
+	client := newMockClient()
 
-	m := &mockVaultClient{}
+	for _, c := range []struct {
+		name        string
+		expectedErr error
+		body        string
+		expectedRes string
+	}{
+		{
+			name:        "generic",
+			expectedErr: nil,
+			body: `
+The username is "@@path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper@@"
+
+This value should not be substituted due to a different delimiter:  "$$path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper$$"
+`,
+			expectedRes: `
+The username is "POSTGRES"
+
+This value should not be substituted due to a different delimiter:  "$$path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper$$"
+`,
+		},
+		{
+			name:        "multple-match-per-line",
+			expectedErr: nil,
+			body:        "username=@@path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper@@,password=@@path=kv/storage/postgres/creds,field=password@@",
+			expectedRes: "username=POSTGRES,password=4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
+		},
+		{
+			name:        "invalid-spec-unknown-field",
+			expectedErr: errors.New("Unable to parse option: incorrect-spec (value incorrect-spec)"),
+			body:        "Some text here @@incorrect-spec@@",
+		},
+		{
+			name:        "invalid-spec-invalid-path",
+			expectedErr: errors.New("no path to query using mountpoint kv"),
+			body:        "Some text here @@path=kv/,field=something@@",
+		},
+		{
+			name:        "invalid-spec-format-errors",
+			expectedErr: errors.New("Unknown transformation: wrong"),
+			body:        "Some text here @@path=kv/storage/postgres/creds,field=username,transform=wrong@@",
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			b, err := substitute.PatchSecrets(strings.NewReader(c.body), regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, "@@", "@@")), client)
+			assert.Equal(string(b), c.expectedRes)
+			assert.Equal(c.expectedErr, err)
+		})
+	}
+
+}
+
+func TestSecretPatchingWithReaderError(t *testing.T) {
+	assert := assert.New(t)
+	client := newMockClient()
+	b, err := substitute.PatchSecrets(&errReader{}, regexp.MustCompile(""), client)
+	assert.Equal(errors.New("read error"), err)
+	assert.Nil(b)
+}
+
+type errReader struct{}
+
+func (r *errReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("read error")
+}
+
+type mockKVReader struct{ mock.Mock }
+
+func (m *mockKVReader) ReadKVv1(mount, path string) (*api.KVSecret, error) {
+	args := m.Called(mount, path)
+	// nolint:forcetypeassert
+	return args.Get(0).(*api.KVSecret), args.Error(1)
+}
+
+func (m *mockKVReader) ReadKVv2(mount, path string) (*api.KVSecret, error) {
+	args := m.Called(mount, path)
+	// nolint:forcetypeassert
+	return args.Get(0).(*api.KVSecret), args.Error(1)
+}
+
+func newMockClient() *vault.Client {
+	m := &mockKVReader{}
 	m.On("ReadKVv2", "kv", "storage/postgres/creds").Return(&api.KVSecret{
 		Data: map[string]interface{}{
 			"username": "cG9zdGdyZXM=",
 			"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
 		},
 	}, nil)
-
-	client := &vault.Client{Client: m}
-
-	expected, err := os.ReadFile(fmt.Sprintf("./fixtures/%s.expected.txt", file))
-	assert.Nil(err)
-
-	f, err := os.Open(fmt.Sprintf("./fixtures/%s.txt", file))
-	assert.Nil(err)
-
-	b, err := substitute.PatchSecretsInFile(f, regexp.MustCompile(`@@(.*?)@@`), client)
-	assert.Nil(err)
-
-	assert.Equal(expected, b)
-}
-
-type mockVaultClient struct{ mock.Mock }
-
-func (m *mockVaultClient) ReadKVv1(mount, path string) (*api.KVSecret, error) {
-	args := m.Called(mount, path)
-	// nolint:forcetypeassert
-	return args.Get(0).(*api.KVSecret), args.Error(1)
-}
-
-func (m *mockVaultClient) ReadKVv2(mount, path string) (*api.KVSecret, error) {
-	args := m.Called(mount, path)
-	// nolint:forcetypeassert
-	return args.Get(0).(*api.KVSecret), args.Error(1)
+	return &vault.Client{KVReader: m}
 }
