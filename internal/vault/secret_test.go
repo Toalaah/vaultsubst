@@ -11,107 +11,110 @@ import (
 
 func TestSecretSpecParsing(t *testing.T) {
 	assert := assert.New(t)
-	cases := []struct {
-		SpecStr       string
-		ExpectedValue *vault.SecretSpec
-		ExpectedErr   error
-		Description   string
+	t.Parallel()
+
+	for _, c := range []struct {
+		name          string
+		parseStr      string
+		expectedValue *vault.SecretSpec
+		expectedErr   error
 	}{
 		{
-			SpecStr: "path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper",
-			ExpectedValue: &vault.SecretSpec{
+			parseStr: "path=kv/storage/postgres/creds,field=password",
+			expectedValue: &vault.SecretSpec{
+				Path:            "kv/storage/postgres/creds",
+				Field:           "password",
+				B64:             false,
+				Transformations: nil,
+				MountVersion:    vault.KVv2,
+			},
+			expectedErr: nil,
+			name:        "parse-generic",
+		},
+		{
+			parseStr: "path=kv/storage/postgres/creds,field=username,b64=true,transform=trim|upper",
+			expectedValue: &vault.SecretSpec{
 				Path:            "kv/storage/postgres/creds",
 				Field:           "username",
 				B64:             true,
 				Transformations: []string{"trim", "upper"},
 				MountVersion:    vault.KVv2,
 			},
-			ExpectedErr: nil,
-			Description: "It should correctly construct with transform opts",
+			expectedErr: nil,
+			name:        "parse-transforms",
 		},
 		{
-			SpecStr: "path=kv/storage/postgres/creds,field=password",
-			ExpectedValue: &vault.SecretSpec{
-				Path:            "kv/storage/postgres/creds",
-				Field:           "password",
-				B64:             false,
-				Transformations: nil,
-				MountVersion:    vault.KVv2,
-			},
-			ExpectedErr: nil,
-			Description: "It should correctly construct from input with minimum required fields",
-		},
-		{
-			SpecStr: "path=kv/storage/postgres/creds,field=password,ver=v1",
-			ExpectedValue: &vault.SecretSpec{
+			parseStr: "path=kv/storage/postgres/creds,field=password,ver=v1",
+			expectedValue: &vault.SecretSpec{
 				Path:            "kv/storage/postgres/creds",
 				Field:           "password",
 				B64:             false,
 				Transformations: nil,
 				MountVersion:    vault.KVv1,
 			},
-			ExpectedErr: nil,
-			Description: "It should correctly set the kv version",
+			expectedErr: nil,
+			name:        "parse-kv-version",
 		},
 		{
-			SpecStr: "path=kv/storage/postgres/creds,field=password,ver=foobarbaz",
-			ExpectedValue: &vault.SecretSpec{
+			parseStr: "path=kv/storage/postgres/creds,field=password,ver=foobarbaz",
+			expectedValue: &vault.SecretSpec{
 				Path:            "kv/storage/postgres/creds",
 				Field:           "password",
 				B64:             false,
 				Transformations: nil,
 				MountVersion:    "foobarbaz",
 			},
-			ExpectedErr: nil,
-			// This is the job of the vault client, see Read() in client.go
-			Description: "It should not verify that KV version is valid",
+			expectedErr: nil,
+			// This is the job of the vault client, see ReadKV() in client.go
+			name: "parse-invalid-kv-version",
 		},
 		{
-			SpecStr: "path =       kv/storage/postgres/creds ,    field= username,b64=true",
-			ExpectedValue: &vault.SecretSpec{
+			parseStr: "path =       kv/storage/postgres/creds ,    field= username,b64=true",
+			expectedValue: &vault.SecretSpec{
 				Path:         "kv/storage/postgres/creds",
 				Field:        "username",
 				B64:          true,
 				MountVersion: vault.KVv2,
 			},
-			ExpectedErr: nil,
-			Description: "It should trim spaces from input string",
+			expectedErr: nil,
+			name:        "parse-trim-spaces",
 		},
 		{
-			SpecStr:       "path=kv/storage/postgres/creds,,fieldpassword",
-			ExpectedValue: nil,
-			ExpectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,,fieldpassword (value )"),
-			Description:   "It should fail to construct on poorly delimited input",
+			parseStr:      "path=kv/storage/postgres/creds,,fieldpassword",
+			expectedValue: nil,
+			expectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,,fieldpassword (value )"),
+			name:          "parse-invalid-str",
 		},
 		{
-			SpecStr:       "field=username,b64=true,transform=trim|upper",
-			ExpectedValue: nil,
-			ExpectedErr:   errors.New("Path may not be empty"),
-			Description:   "It should fail to construct if path is empty",
+			parseStr:      "field=username,b64=true,transform=trim|upper",
+			expectedValue: nil,
+			expectedErr:   errors.New("Path may not be empty"),
+			name:          "missing-required-fields-1",
 		},
 		{
-			SpecStr:       "path=kv/storage/postgres/creds,b64=true,transform=trim|upper",
-			ExpectedValue: nil,
-			ExpectedErr:   errors.New("Field may not be empty"),
-			Description:   "It should fail to construct if field is empty",
+			parseStr:      "path=kv/storage/postgres/creds,b64=true,transform=trim|upper",
+			expectedValue: nil,
+			expectedErr:   errors.New("Field may not be empty"),
+			name:          "missing-required-fields-2",
 		},
 		{
-			SpecStr:       "path=kv/storage/postgres/creds,transform=trim,upper,b64d",
-			ExpectedValue: nil,
-			ExpectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,transform=trim,upper,b64d (value upper)"),
-			Description:   "Transform opts should be delimited by '|', not ','",
+			parseStr:      "path=kv/storage/postgres/creds,transform=trim,upper,b64d",
+			expectedValue: nil,
+			expectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,transform=trim,upper,b64d (value upper)"),
+			name:          "transform-delimiters",
 		},
-	}
-
-	for _, c := range cases {
-		s, err := vault.NewSecretSpec(c.SpecStr)
-		assert.Equal(c.ExpectedValue, s, c.Description)
-		assert.Equal(c.ExpectedErr, err, c.Description)
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			s, err := vault.NewSecretSpec(c.parseStr)
+			assert.Equal(c.expectedValue, s, c.name)
+			assert.Equal(c.expectedErr, err, c.name)
+		})
 	}
 }
 
 func TestSecretFormatting(t *testing.T) {
 	assert := assert.New(t)
+	t.Parallel()
 
 	dummySecret := &api.KVSecret{
 		Data: map[string]interface{}{
@@ -120,49 +123,49 @@ func TestSecretFormatting(t *testing.T) {
 		},
 	}
 
-	cases := []struct {
-		Spec          *vault.SecretSpec
-		ExpectedValue string
-		ExpectedErr   error
-		Description   string
-		Secret        *api.KVSecret
+	for _, c := range []struct {
+		name          string
+		spec          *vault.SecretSpec
+		expectedValue string
+		expectedErr   error
+		secret        *api.KVSecret
 	}{
 		{
-			Spec: &vault.SecretSpec{
+			spec: &vault.SecretSpec{
 				Path:  "kv/storage/postgres/creds",
 				Field: "username",
 				B64:   true,
 			},
-			ExpectedValue: "postgres",
-			ExpectedErr:   nil,
-			Secret:        dummySecret,
-			Description:   "It should read and format an existing field from a secret",
+			expectedValue: "postgres",
+			expectedErr:   nil,
+			secret:        dummySecret,
+			name:          "generic-1",
 		},
 		{
-			Spec: &vault.SecretSpec{
+			spec: &vault.SecretSpec{
 				Path:  "kv/storage/doesnotexist",
 				Field: "username",
 			},
-			ExpectedValue: "",
-			ExpectedErr:   errors.New("secret is nil"),
-			Secret:        nil,
-			Description:   "It should fail to format a nil secret",
+			expectedValue: "",
+			expectedErr:   errors.New("secret is nil"),
+			secret:        nil,
+			name:          "nil-secret",
 		},
 		{
-			Spec: &vault.SecretSpec{
+			spec: &vault.SecretSpec{
 				Path:  "kv/storage/postgres/creds",
 				Field: "doesnotexist",
 			},
-			ExpectedValue: "",
-			ExpectedErr:   errors.New("could not cast data at field doesnotexist to string"),
-			Secret:        dummySecret,
-			Description:   "It should fail to format a non-existent field",
+			expectedValue: "",
+			expectedErr:   errors.New("could not cast data at field doesnotexist to string"),
+			secret:        dummySecret,
+			name:          "nonexistent-field",
 		},
-	}
-
-	for _, c := range cases {
-		s, err := c.Spec.FormatSecret(c.Secret)
-		assert.Equal(c.ExpectedValue, s, c.Description)
-		assert.Equal(c.ExpectedErr, err, c.Description)
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			s, err := c.spec.FormatSecret(c.secret)
+			assert.Equal(c.expectedValue, s, c.name)
+			assert.Equal(c.expectedErr, err, c.name)
+		})
 	}
 }
