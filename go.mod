@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/vault/api v1.13.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.9.0
-	github.com/urfave/cli/v2 v2.27.1
+	github.com/urfave/cli/v2 v2.27.2
 )
 
 require (
