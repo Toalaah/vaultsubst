@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -9,7 +10,7 @@ import (
 
 	"github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/toalaah/vaultsubst/internal/vault"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var (
@@ -17,18 +18,18 @@ var (
 	commit  string
 	branch  string
 
-	app *cli.App
+	app *cli.Command
 )
 
 func main() {
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	app = &cli.App{
+	app = &cli.Command{
 		Name:            "vaultsubst",
 		Usage:           "inject and format vault secrets into files",
 		ArgsUsage:       "FILE [FILE...]",
@@ -52,11 +53,11 @@ func init() {
 	}
 }
 
-func runCmd(ctx *cli.Context) error {
-	escapedDelim := regexp.QuoteMeta(ctx.String("delimiter"))
+func runCmd(ctx context.Context, cmd *cli.Command) error {
+	escapedDelim := regexp.QuoteMeta(cmd.String("delimiter"))
 	r := regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, escapedDelim, escapedDelim))
-	args := ctx.Args().Slice()
-	inPlace := ctx.Bool("in-place")
+	args := cmd.Args().Slice()
+	inPlace := cmd.Bool("in-place")
 
 	if len(args) == 0 {
 		// Fallback to stdin if no arguments were passed
@@ -71,7 +72,7 @@ func runCmd(ctx *cli.Context) error {
 			}
 			args = append(args, "/dev/stdin")
 		} else {
-			return cli.ShowAppHelp(ctx)
+			return cli.ShowAppHelp(cmd)
 		}
 	}
 
