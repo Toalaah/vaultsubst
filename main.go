@@ -5,7 +5,7 @@ import (
 	"os"
 	"regexp"
 
-	subst "github.com/toalaah/vaultsubst/internal/substitute"
+	"github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/toalaah/vaultsubst/internal/vault"
 	"github.com/urfave/cli/v2"
 
@@ -13,8 +13,6 @@ import (
 )
 
 var (
-	delimiter string
-	inPlace   bool
 	//go:embed version.txt
 	version string
 	app     *cli.App
@@ -22,7 +20,7 @@ var (
 
 func main() {
 	if err := app.Run(os.Args); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
@@ -37,27 +35,26 @@ func init() {
 		HideHelpCommand: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "delimiter",
-				Aliases:     []string{"d", "delim"},
-				Value:       "@@",
-				Usage:       "delimiter to use for injections",
-				Destination: &delimiter,
+				Name:    "delimiter",
+				Aliases: []string{"d", "delim"},
+				Value:   "@@",
+				Usage:   "delimiter to use for injections",
 			},
 			&cli.BoolFlag{
-				Name:        "in-place",
-				Aliases:     []string{"i"},
-				Value:       false,
-				Usage:       "modify files in place",
-				Destination: &inPlace,
+				Name:    "in-place",
+				Aliases: []string{"i"},
+				Value:   false,
+				Usage:   "modify files in place",
 			},
 		},
 	}
 }
 
 func runCmd(ctx *cli.Context) error {
-	escapedDelim := regexp.QuoteMeta(delimiter)
+	escapedDelim := regexp.QuoteMeta(ctx.String("delimiter"))
 	r := regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, escapedDelim, escapedDelim))
 	args := ctx.Args().Slice()
+	inPlace := ctx.Bool("in-place")
 
 	if len(args) == 0 {
 		// Fallback to stdin if no arguments were passed
@@ -87,7 +84,7 @@ func runCmd(ctx *cli.Context) error {
 			return err
 		}
 
-		b, err := subst.PatchSecretsInFile(f, r, client)
+		b, err := substitute.PatchSecrets(f, r, client)
 		if err != nil {
 			return err
 		}

@@ -1,4 +1,4 @@
-package transformations
+package transformations_test
 
 import (
 	"encoding/base64"
@@ -6,44 +6,61 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/toalaah/vaultsubst/internal/transformations"
 )
 
 func TestTransformations(t *testing.T) {
+	t.Parallel()
 	assert := assert.New(t)
-	cases := []struct {
-		Action, TestValue, ExpectedValue string
-		ExpectedErr                      error
+	for _, c := range []struct {
+		action        string
+		testValue     string
+		expectedValue string
+		name          string
+		expectedErr   error
 	}{
 		{
-			Action:        "base64",
-			TestValue:     "postgres",
-			ExpectedValue: "cG9zdGdyZXM=",
-			ExpectedErr:   nil,
+			name:          "decode-base64",
+			action:        "base64",
+			testValue:     "postgres",
+			expectedValue: "cG9zdGdyZXM=",
+			expectedErr:   nil,
 		},
 		{
-			Action:        "trim",
-			TestValue:     "  postgres  ",
-			ExpectedValue: "postgres",
-			ExpectedErr:   nil,
+			name:          "trim",
+			action:        "trim",
+			testValue:     "  postgres  ",
+			expectedValue: "postgres",
+			expectedErr:   nil,
 		},
 		{
-			Action:        "foobarbaz",
-			TestValue:     "postgres",
-			ExpectedValue: "",
-			ExpectedErr:   errors.New("Unknown transformation: foobarbaz"),
+			name:          "trim-retain-internal-spacing",
+			action:        "trim",
+			testValue:     "  hello world  ",
+			expectedValue: "hello world",
+			expectedErr:   nil,
 		},
 		{
-			Action:        "base64d",
-			TestValue:     "InvalidBase64Value",
-			ExpectedValue: "",
-			ExpectedErr:   base64.CorruptInputError(16),
+			name:          "fail-on-invalid-transform",
+			action:        "foobarbaz",
+			testValue:     "postgres",
+			expectedValue: "",
+			expectedErr:   errors.New("Unknown transformation: foobarbaz"),
 		},
-	}
+		{
+			name:          "fail-illegal-base64",
+			action:        "base64d",
+			testValue:     "InvalidBase64Value",
+			expectedValue: "",
+			expectedErr:   base64.CorruptInputError(16),
+		},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			v, err := transformations.Apply(c.action, c.testValue)
+			assert.Equal(c.expectedValue, v)
+			assert.Equal(c.expectedErr, err)
+		})
 
-	for _, c := range cases {
-		v, err := Apply(c.Action, c.TestValue)
-		assert.Equal(c.ExpectedValue, v)
-		assert.Equal(c.ExpectedErr, err)
 	}
 }
 
@@ -69,7 +86,7 @@ func TestTransformationsChained(t *testing.T) {
 		var err error
 		s := c.ExpectedValue
 		for _, a := range c.Actions {
-			s, err = Apply(a, s)
+			s, err = transformations.Apply(a, s)
 			assert.Nil(err)
 		}
 		assert.Equal(c.ExpectedValue, s)

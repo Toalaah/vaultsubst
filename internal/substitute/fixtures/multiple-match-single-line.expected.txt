@@ -1,1 +1,0 @@
-username=POSTGRES,password=4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd

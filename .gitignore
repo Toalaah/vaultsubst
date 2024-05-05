@@ -1,2 +1,3 @@
 /vaultsubst
 .direnv
+dist/
