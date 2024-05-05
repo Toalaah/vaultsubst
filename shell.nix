@@ -6,5 +6,6 @@ with pkgs;
       golangci-lint
       vault
       osv-scanner
+      goreleaser
     ];
   }

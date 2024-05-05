@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"runtime/debug"
+	"strconv"
 
 	"github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/toalaah/vaultsubst/internal/vault"
 	"github.com/urfave/cli/v2"
-
-	_ "embed"
 )
 
 var (
-	//go:embed version.txt
-	version string
-	app     *cli.App
+	version string = "dev"
+	commit  string
+	branch  string
+
+	app *cli.App
 )
 
 func main() {
@@ -31,7 +33,7 @@ func init() {
 		Usage:           "inject and format vault secrets into files",
 		ArgsUsage:       "FILE [FILE...]",
 		Action:          runCmd,
-		Version:         version,
+		Version:         buildVersionString(),
 		HideHelpCommand: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -105,4 +107,36 @@ func hasStdin() (bool, error) {
 		return false, err
 	}
 	return (f.Mode()&os.ModeCharDevice == 0), nil
+}
+
+func buildVersionString() string {
+	dirty := false
+	// Try to read some vcs info from debug build
+	if commit == "" {
+		if info, ok := debug.ReadBuildInfo(); ok {
+			for _, setting := range info.Settings {
+				switch setting.Key {
+				case "vcs.revision":
+					commit = setting.Value[:7]
+				case "vcs.modified":
+					if val, err := strconv.ParseBool(setting.Value); err == nil {
+						dirty = val
+					}
+				}
+			}
+		}
+	}
+
+	v := version
+	if commit != "" {
+		v = fmt.Sprintf("%s (%s)", version, commit)
+	}
+	if dirty {
+		v = fmt.Sprintf("%s-dirty (%s)", version, commit)
+	}
+	if branch != "" {
+		v = fmt.Sprintf("%s-dirty (%s %s)", version, commit, branch)
+	}
+
+	return v
 }
