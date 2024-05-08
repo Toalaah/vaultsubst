@@ -129,14 +129,16 @@ func buildVersionString() string {
 	}
 
 	v := version
-	if commit != "" {
-		v = fmt.Sprintf("%s (%s)", version, commit)
-	}
 	if dirty {
-		v = fmt.Sprintf("%s-dirty (%s)", version, commit)
+		v += "-dirty"
 	}
-	if branch != "" {
-		v = fmt.Sprintf("%s-dirty (%s %s)", version, commit, branch)
+	if commit != "" {
+		switch branch {
+		case "":
+			v = fmt.Sprintf("%s (%s)", v, commit)
+		default:
+			v = fmt.Sprintf("%s (%s %s)", v, commit, branch)
+		}
 	}
 
 	return v
