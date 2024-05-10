@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	version string = "dev"
+	version string
 	commit  string
 	branch  string
 
@@ -112,26 +112,36 @@ func hasStdin() (bool, error) {
 
 func buildVersionString() string {
 	dirty := false
+	v := version
+	dbg, ok := debug.ReadBuildInfo()
+
+	// Set version only if it was not set via ldflags
+	if v == "" && ok {
+		v = dbg.Main.Version
+	}
+	// Fallback to unknown default version identifier if ldflags not set or we are in debug context.
+	if v == "" || v == "(devel)" {
+		v = "dev"
+	}
+
 	// Try to read some vcs info from debug build
-	if commit == "" {
-		if info, ok := debug.ReadBuildInfo(); ok {
-			for _, setting := range info.Settings {
-				switch setting.Key {
-				case "vcs.revision":
-					commit = setting.Value[:7]
-				case "vcs.modified":
-					if val, err := strconv.ParseBool(setting.Value); err == nil {
-						dirty = val
-					}
+	if commit == "" && ok {
+		for _, setting := range dbg.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				commit = setting.Value[:7]
+			case "vcs.modified":
+				if val, err := strconv.ParseBool(setting.Value); err == nil {
+					dirty = val
 				}
 			}
 		}
 	}
 
-	v := version
 	if dirty {
 		v += "-dirty"
 	}
+
 	if commit != "" {
 		switch branch {
 		case "":
