@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"regexp"
 	"runtime/debug"
 	"strconv"
 
+	"github.com/toalaah/vaultsubst/internal/path"
 	"github.com/toalaah/vaultsubst/internal/substitute"
 	"github.com/toalaah/vaultsubst/internal/vault"
 	"github.com/urfave/cli/v3"
@@ -19,6 +22,11 @@ var (
 	branch  string
 
 	app *cli.Command
+
+	client    *vault.Client
+	r         *regexp.Regexp
+	inPlace   bool
+	recursive bool
 )
 
 func main() {
@@ -49,15 +57,24 @@ func init() {
 				Value:   false,
 				Usage:   "modify files in place",
 			},
+			&cli.BoolFlag{
+				Name:    "recursive",
+				Aliases: []string{"r"},
+				Value:   false,
+				Usage:   "recurse subdirectories",
+			},
 		},
 	}
 }
 
 func runCmd(ctx context.Context, cmd *cli.Command) error {
+	var err error
+
 	escapedDelim := regexp.QuoteMeta(cmd.String("delimiter"))
-	r := regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, escapedDelim, escapedDelim))
+	r = regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, escapedDelim, escapedDelim))
 	args := cmd.Args().Slice()
-	inPlace := cmd.Bool("in-place")
+	inPlace = cmd.Bool("in-place")
+	recursive = cmd.Bool("recursive")
 
 	if len(args) == 0 {
 		// Fallback to stdin if no arguments were passed
@@ -76,28 +93,22 @@ func runCmd(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
-	client, err := vault.NewClient()
+	client, err = vault.NewClient()
 	if err != nil {
 		return err
 	}
 
-	for _, file := range args {
-		f, err := os.Open(file)
+	for _, pth := range args {
+		handler := handleFile
+		isDir, err := path.IsDir(pth)
 		if err != nil {
 			return err
 		}
-
-		b, err := substitute.PatchSecrets(f, r, client)
-		if err != nil {
-			return err
+		if isDir {
+			handler = handleDir
 		}
-
-		if inPlace {
-			if err := os.WriteFile(file, b, 0644); err != nil {
-				return err
-			}
-		} else {
-			fmt.Fprint(os.Stdout, string(b))
+		if err := handler(pth); err != nil {
+			return err
 		}
 	}
 
@@ -110,6 +121,43 @@ func hasStdin() (bool, error) {
 		return false, err
 	}
 	return (f.Mode()&os.ModeCharDevice == 0), nil
+}
+
+func handleDir(dir string) error {
+	return filepath.WalkDir(dir, func(path string, f fs.DirEntry, _ error) error {
+		if f.IsDir() {
+			// If we are in recursive mode , we can just return nil here since we
+			// patching a directory makes no sense (we do however need to distinguish
+			// whether we are still in the root directory, as otherwise we skip those
+			// files if '-r' is not set). Otherwise, we explicitly tell the path
+			// walker to skip recursing into this directory, effectively only
+			// iterating the the files in the cwd.
+			if recursive || path == dir {
+				return nil
+			}
+			return filepath.SkipDir
+		}
+		return handleFile(path)
+	})
+}
+
+func handleFile(file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	b, err := substitute.PatchSecrets(f, r, client)
+	if err != nil {
+		return err
+	}
+	if inPlace {
+		if err := os.WriteFile(file, b, 0644); err != nil {
+			return err
+		}
+	} else {
+		fmt.Fprint(os.Stdout, string(b))
+	}
+	return nil
 }
 
 func buildVersionString() string {
