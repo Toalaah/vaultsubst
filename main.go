@@ -93,7 +93,9 @@ func runCmd(ctx context.Context, cmd *cli.Command) error {
 		}
 
 		if inPlace {
-			return os.WriteFile(file, b, 0644)
+			if err := os.WriteFile(file, b, 0644); err != nil {
+				return err
+			}
 		} else {
 			fmt.Fprint(os.Stdout, string(b))
 		}
