@@ -63,7 +63,7 @@ This value should not be substituted due to a different delimiter:  "$$path=kv/s
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			b, err := substitute.PatchSecrets(strings.NewReader(c.body), regexp.MustCompile(fmt.Sprintf(`%s(.*?)%s`, "@@", "@@")), client)
-			assert.Equal(string(b), c.expectedRes)
+			assert.Equal(c.expectedRes, string(b))
 			assert.Equal(c.expectedErr, err)
 		})
 	}
