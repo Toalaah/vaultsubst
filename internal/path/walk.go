@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+const (
+	Root = string(filepath.Separator)
+)
+
 // Normalize normalizes a path. This includes converting the path to its
 // absolute representation, stripping leading and trailing spaces, and removing
 // trailing filepath separators.
@@ -15,10 +19,10 @@ func Normalize(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if path == string(filepath.Separator) {
+	if path == Root {
 		return path, nil
 	}
-	return strings.TrimSuffix(path, string(filepath.Separator)), nil
+	return strings.TrimSuffix(path, Root), nil
 }
 
 // Depth returns the depth of a sub-path relative to a base-path.
@@ -31,7 +35,7 @@ func Depth(base, path string) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	if base == string(filepath.Separator) {
+	if base == Root {
 		goto end
 	}
 	if !strings.HasPrefix(path, base) {
@@ -39,7 +43,7 @@ func Depth(base, path string) (int, error) {
 	}
 	path = strings.TrimPrefix(path, base)
 end:
-	return strings.Count(path, string(filepath.Separator)), nil
+	return strings.Count(path, Root), nil
 }
 
 // WalkDir walks a directory tree and applies `fn` to each file/directory. A
