@@ -60,7 +60,6 @@ func TestTransformations(t *testing.T) {
 			assert.Equal(c.expectedValue, v)
 			assert.Equal(c.expectedErr, err)
 		})
-
 	}
 }
 

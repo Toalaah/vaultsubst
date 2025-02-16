@@ -65,7 +65,7 @@ func NewClient() (*Client, error) {
 		return nil, err
 	}
 
-	// Try to read from ~/.vault-token if env var is not supplied
+	// Try to read from ~/.vault-token if env var is not supplied.
 	if os.Getenv("VAULT_TOKEN") == "" {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
