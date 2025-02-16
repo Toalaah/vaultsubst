@@ -65,7 +65,7 @@ func TestSecretSpecParsing(t *testing.T) {
 				MountVersion:    "foobarbaz",
 			},
 			expectedErr: nil,
-			// This is the job of the vault client, see ReadKV() in client.go
+			// This is the job of the vault client, see ReadKV() in client.go.
 			name: "parse-invalid-kv-version",
 		},
 		{

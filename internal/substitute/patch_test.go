@@ -67,7 +67,6 @@ This value should not be substituted due to a different delimiter:  "$$path=kv/s
 			assert.Equal(c.expectedErr, err)
 		})
 	}
-
 }
 
 func TestSecretPatchingWithReaderError(t *testing.T) {
@@ -88,13 +87,13 @@ type mockKVReader struct{ mock.Mock }
 
 func (m *mockKVReader) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
-	// nolint:forcetypeassert
+	//nolint:forcetypeassert,errcheck // for testing purposes this is fine.
 	return args.Get(0).(*api.KVSecret), args.Error(1)
 }
 
 func (m *mockKVReader) ReadKVv2(mount, path string) (*api.KVSecret, error) {
 	args := m.Called(mount, path)
-	// nolint:forcetypeassert
+	//nolint:forcetypeassert,errcheck // for testing purposes this is fine.
 	return args.Get(0).(*api.KVSecret), args.Error(1)
 }
 

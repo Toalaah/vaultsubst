@@ -51,17 +51,17 @@ func TestClientConstruction(t *testing.T) {
 		},
 	} {
 		t.Run(c.name, func(t *testing.T) {
-			// Set environment variable for current test case
+			// Set environment variable for current test case.
 			for k, v := range c.env {
 				t.Setenv(k, v)
 			}
-			// If home is set, write fake ".vault-token" file
+			// If home is set, write fake ".vault-token" file.
 			if home, ok := os.LookupEnv("HOME"); ok {
-				// Allow tests on windows to pass as well
+				// Allow tests on windows to pass as well.
 				if runtime.GOOS == "windows" {
 					os.Setenv("USERPROFILE", home)
 				}
-				assert.Nil(os.WriteFile(path.Join(home, ".vault-token"), []byte("super_secret_token"), 0600), "failed to prepare env")
+				assert.Nil(os.WriteFile(path.Join(home, ".vault-token"), []byte("super_secret_token"), 0o600), "failed to prepare env")
 			}
 			client, err := vault.NewClient()
 			assert.Equal(c.expected, err)
@@ -70,7 +70,6 @@ func TestClientConstruction(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestClientReadKV(t *testing.T) {
@@ -150,7 +149,7 @@ func (m *mockKVReader) ReadKVv1(mount, path string) (*api.KVSecret, error) {
 	if s == nil {
 		return nil, err
 	}
-	// nolint:forcetypeassert
+	//nolint:forcetypeassert,errcheck // for testing purposes this is fine.
 	return s.(*api.KVSecret), err
 }
 
@@ -161,6 +160,6 @@ func (m *mockKVReader) ReadKVv2(mount, path string) (*api.KVSecret, error) {
 	if s == nil {
 		return nil, err
 	}
-	// nolint:forcetypeassert
+	//nolint:forcetypeassert,errcheck // for testing purposes this is fine.
 	return s.(*api.KVSecret), err
 }

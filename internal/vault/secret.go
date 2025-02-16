@@ -55,14 +55,14 @@ func (spec *SecretSpec) FormatSecret(secret *api.KVSecret) (string, error) {
 
 // NewSecretSpec constructs and returns a new SecretSpec from a structured string s.
 func NewSecretSpec(s string) (*SecretSpec, error) {
-	// "path = ...,field = ..." => "path=...,field=..."
+	// "path = ...,field = ..." => "path=...,field=...".
 	s = strings.ReplaceAll(s, " ", "")
-	// "path=...,field=..." => ["path=...", "field=..."]
+	// "path=...,field=..." => ["path=...", "field=..."].
 	attrs := strings.Split(s, ",")
 
 	m := make(map[string]string)
 	for _, v := range attrs {
-		// "path=..." => ["path", "..."]
+		// "path=..." => ["path", "..."].
 		kv := strings.Split(v, "=")
 		if len(kv) != 2 {
 			return nil, fmt.Errorf("Unable to parse option: %s (value %s)", s, v)
@@ -80,7 +80,6 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		// transformations will be piped in order anyways.
 		DecodeHook: mapstructure.StringToSliceHookFunc("|"),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +96,7 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 	if spec.Field == "" {
 		return nil, fmt.Errorf("Field may not be empty")
 	}
-	// Default to KVv2 unless specified otherwise
+	// Default to KVv2 unless specified otherwise.
 	if spec.MountVersion == "" {
 		spec.MountVersion = KVv2
 	}

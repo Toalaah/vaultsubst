@@ -77,7 +77,7 @@ func runCmd(ctx context.Context, cmd *cli.Command) error {
 	recursive = cmd.Bool("recursive")
 
 	if len(args) == 0 {
-		// Fallback to stdin if no arguments were passed
+		// Fallback to stdin if no arguments were passed.
 		has, err := hasStdin()
 		if err != nil {
 			return err
@@ -131,7 +131,7 @@ func handleDir(dir string) error {
 			// whether we are still in the root directory, as otherwise we skip those
 			// files if '-r' is not set). Otherwise, we explicitly tell the path
 			// walker to skip recursing into this directory, effectively only
-			// iterating the the files in the cwd.
+			// iterating the files in the cwd.
 			if recursive || path == dir {
 				return nil
 			}
@@ -151,7 +151,7 @@ func handleFile(file string) error {
 		return err
 	}
 	if inPlace {
-		if err := os.WriteFile(file, b, 0644); err != nil {
+		if err := os.WriteFile(file, b, 0o644); err != nil {
 			return err
 		}
 	} else {
@@ -165,7 +165,7 @@ func buildVersionString() string {
 	v := version
 	dbg, ok := debug.ReadBuildInfo()
 
-	// Set version only if it was not set via ldflags
+	// Set version only if it was not set via ldflags.
 	if v == "" && ok {
 		v = dbg.Main.Version
 	}
@@ -174,7 +174,7 @@ func buildVersionString() string {
 		v = "dev"
 	}
 
-	// Try to read some vcs info from debug build
+	// Try to read some vcs info from debug build.
 	if commit == "" && ok {
 		for _, setting := range dbg.Settings {
 			switch setting.Key {
