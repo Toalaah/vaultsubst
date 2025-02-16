@@ -67,7 +67,7 @@ per-secret basis by specifying `ver=v1` in the template string, for example:
 ## Contributing
 
 Contributions (PRs, issues, etc.) are welcome. Please note that the minimum
-required Go version for building `vaultsubst` is `1.22`. Only the last two
+required Go version for building `vaultsubst` is `1.23`. Only the last two
 major Go versions are officially supported and tested against CI, as such there
 are no guarantees for any older versions.
 
