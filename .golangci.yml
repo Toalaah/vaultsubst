@@ -1,27 +1,79 @@
 # Visit https://golangci-lint.run/ for usage documentation
 # and information on other useful linters
-issues:
-  max-per-linter: 0
-  max-same-issues: 0
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  copyloopvar:
+    check-alias: true
+  gocritic:
+    enable-all: true
+  godot:
+    scope: all
+  importas:
+    no-unaliased: true
+  makezero:
+    always: true
+  misspell:
+    locale: US
+  nakedret:
+    max-func-lines: 5
+  nolintlint:
+    require-explanation: true
+    require-specific: true
+  unconvert:
+    fast-math: true
 
 linters:
   disable-all: true
   enable:
-    - durationcheck
     - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - asasalint
+    - asciicheck
+    - bidichk
+    - canonicalheader
+    - contextcheck
     - copyloopvar
+    - decorder
+    - dogsled
+    - dupword
+    - durationcheck
+    - errchkjson
+    - fatcontext
+    - forbidigo
     - forcetypeassert
+    - gci
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocognit
+    - goconst
     - godot
     - gofmt
-    - gosimple
-    - ineffassign
-    - makezero
+    - gofumpt
+    - gomoddirectives
+    - goprintffuncname
+    - gosmopolitan
+    - importas
+    - inamedparam
+    - interfacebloat
+    - intrange
+    - mirror
     - misspell
+    - nakedret
     - nilerr
+    - noctx
+    - nolintlint
+    - nosprintfhostport
     - predeclared
-    - staticcheck
-    - tenv
+    - reassign
+    - tagalign
     - unconvert
     - unparam
-    - unused
-    - govet
+    - usestdlibvars
+    - wastedassign
+    - whitespace
