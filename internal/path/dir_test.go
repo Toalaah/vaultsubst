@@ -18,10 +18,8 @@ func TestIsDir(t *testing.T) {
 	dir := t.TempDir()
 	file, err := os.CreateTemp(dir, "file")
 	assert.Nil(err)
-	removedDir := t.TempDir()
-	removedFile := gopath.Join(removedDir, "file")
-	assert.Nil(err)
-	os.Remove(removedDir)
+	defer file.Close()
+	removedPath := gopath.Join(dir, "some", "path")
 
 	for _, c := range []struct {
 		name        string
@@ -42,14 +40,8 @@ func TestIsDir(t *testing.T) {
 			expectedRes: false,
 		},
 		{
-			name:        "directory-does-not-exist",
-			path:        removedDir,
-			expectedErr: &fs.PathError{},
-			expectedRes: false,
-		},
-		{
-			name:        "file-does-not-exist",
-			path:        removedFile,
+			name:        "path-does-not-exist",
+			path:        removedPath,
 			expectedErr: &fs.PathError{},
 			expectedRes: false,
 		},
