@@ -2,7 +2,7 @@
 with pkgs;
   mkShell {
     buildInputs = [
-      go_1_23
+      go_1_24
       golangci-lint
       vault
       osv-scanner
