@@ -1,38 +1,7 @@
-# Visit https://golangci-lint.run/ for usage documentation
-# and information on other useful linters
-linters-settings:
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  copyloopvar:
-    check-alias: true
-  gocritic:
-    enable-all: true
-  godot:
-    scope: all
-  importas:
-    no-unaliased: true
-  makezero:
-    always: true
-  misspell:
-    locale: US
-  nakedret:
-    max-func-lines: 5
-  nolintlint:
-    require-explanation: true
-    require-specific: true
-  unconvert:
-    fast-math: true
-
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
     - asasalint
     - asciicheck
     - bidichk
@@ -43,23 +12,23 @@ linters:
     - dogsled
     - dupword
     - durationcheck
+    - errcheck
     - errchkjson
     - fatcontext
     - forbidigo
     - forcetypeassert
-    - gci
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocognit
     - goconst
     - godot
-    - gofmt
-    - gofumpt
     - gomoddirectives
     - goprintffuncname
     - gosmopolitan
+    - govet
     - importas
     - inamedparam
+    - ineffassign
     - interfacebloat
     - intrange
     - mirror
@@ -71,9 +40,56 @@ linters:
     - nosprintfhostport
     - predeclared
     - reassign
+    - staticcheck
     - tagalign
     - unconvert
     - unparam
+    - unused
     - usestdlibvars
     - wastedassign
     - whitespace
+  settings:
+    copyloopvar:
+      check-alias: true
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    gocritic:
+      enable-all: true
+    godot:
+      scope: all
+    importas:
+      no-unaliased: true
+    makezero:
+      always: true
+    misspell:
+      locale: US
+    nakedret:
+      max-func-lines: 5
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    unconvert:
+      fast-math: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
