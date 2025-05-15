@@ -47,7 +47,7 @@ This value should not be substituted due to a different delimiter:  "$$path=kv/s
 		},
 		{
 			name:        "invalid-spec-unknown-field",
-			expectedErr: errors.New("Unable to parse option: incorrect-spec (value incorrect-spec)"),
+			expectedErr: errors.New("unable to parse option: incorrect-spec (value incorrect-spec)"),
 			body:        "Some text here @@incorrect-spec@@",
 		},
 		{
@@ -57,7 +57,7 @@ This value should not be substituted due to a different delimiter:  "$$path=kv/s
 		},
 		{
 			name:        "invalid-spec-format-errors",
-			expectedErr: errors.New("Unknown transformation: wrong"),
+			expectedErr: errors.New("unknown transformation: wrong"),
 			body:        "Some text here @@path=kv/storage/postgres/creds,field=username,transform=wrong@@",
 		},
 	} {

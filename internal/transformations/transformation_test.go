@@ -45,7 +45,7 @@ func TestTransformations(t *testing.T) {
 			action:        "foobarbaz",
 			testValue:     "postgres",
 			expectedValue: "",
-			expectedErr:   errors.New("Unknown transformation: foobarbaz"),
+			expectedErr:   errors.New("unknown transformation: foobarbaz"),
 		},
 		{
 			name:          "fail-illegal-base64",

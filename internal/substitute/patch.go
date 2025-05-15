@@ -29,7 +29,7 @@ func PatchSecrets(r io.Reader, regexp *regexp.Regexp, client *vault.Client) ([]b
 		if err != nil {
 			return nil, err
 		}
-		s = strings.Replace(s, originalContent, secret, -1)
+		s = strings.ReplaceAll(s, originalContent, secret)
 	}
 	return []byte(s), nil
 }

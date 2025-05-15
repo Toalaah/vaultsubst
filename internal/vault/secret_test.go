@@ -82,25 +82,25 @@ func TestSecretSpecParsing(t *testing.T) {
 		{
 			parseStr:      "path=kv/storage/postgres/creds,,fieldpassword",
 			expectedValue: nil,
-			expectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,,fieldpassword (value )"),
+			expectedErr:   errors.New("unable to parse option: path=kv/storage/postgres/creds,,fieldpassword (value )"),
 			name:          "parse-invalid-str",
 		},
 		{
 			parseStr:      "field=username,b64=true,transform=trim|upper",
 			expectedValue: nil,
-			expectedErr:   errors.New("Path may not be empty"),
+			expectedErr:   errors.New("path may not be empty"),
 			name:          "missing-required-fields-1",
 		},
 		{
 			parseStr:      "path=kv/storage/postgres/creds,b64=true,transform=trim|upper",
 			expectedValue: nil,
-			expectedErr:   errors.New("Field may not be empty"),
+			expectedErr:   errors.New("field may not be empty"),
 			name:          "missing-required-fields-2",
 		},
 		{
 			parseStr:      "path=kv/storage/postgres/creds,transform=trim,upper,b64d",
 			expectedValue: nil,
-			expectedErr:   errors.New("Unable to parse option: path=kv/storage/postgres/creds,transform=trim,upper,b64d (value upper)"),
+			expectedErr:   errors.New("unable to parse option: path=kv/storage/postgres/creds,transform=trim,upper,b64d (value upper)"),
 			name:          "transform-delimiters",
 		},
 	} {
@@ -117,7 +117,7 @@ func TestSecretFormatting(t *testing.T) {
 	t.Parallel()
 
 	dummySecret := &api.KVSecret{
-		Data: map[string]interface{}{
+		Data: map[string]any{
 			"username": "cG9zdGdyZXM=",
 			"password": "4_5tr0ng_4nd_c0mpl1c4t3d_p455w0rd",
 		},

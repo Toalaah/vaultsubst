@@ -26,6 +26,6 @@ func Apply(transformation string, s string) (string, error) {
 	case "trim":
 		return strings.TrimSpace(s), nil
 	default:
-		return "", fmt.Errorf("Unknown transformation: %s", transformation)
+		return "", fmt.Errorf("unknown transformation: %s", transformation)
 	}
 }

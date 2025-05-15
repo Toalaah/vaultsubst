@@ -65,7 +65,7 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 		// "path=..." => ["path", "..."].
 		kv := strings.Split(v, "=")
 		if len(kv) != 2 {
-			return nil, fmt.Errorf("Unable to parse option: %s (value %s)", s, v)
+			return nil, fmt.Errorf("unable to parse option: %s (value %s)", s, v)
 		}
 		m[kv[0]] = kv[1]
 	}
@@ -91,10 +91,10 @@ func NewSecretSpec(s string) (*SecretSpec, error) {
 	// Some light validation on the decoded spec string. Without a path/field to
 	// query, we are kind of useless.
 	if spec.Path == "" {
-		return nil, fmt.Errorf("Path may not be empty")
+		return nil, fmt.Errorf("path may not be empty")
 	}
 	if spec.Field == "" {
-		return nil, fmt.Errorf("Field may not be empty")
+		return nil, fmt.Errorf("field may not be empty")
 	}
 	// Default to KVv2 unless specified otherwise.
 	if spec.MountVersion == "" {
