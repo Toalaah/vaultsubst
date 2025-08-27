@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/hashicorp/vault/api v1.20.0
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.4.1
 )
 
