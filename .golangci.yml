@@ -2,52 +2,52 @@ version: "2"
 linters:
   default: none
   enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - canonicalheader
-    - contextcheck
-    - copyloopvar
-    - decorder
-    - dogsled
-    - dupword
-    - durationcheck
-    - errcheck
-    - errchkjson
-    - fatcontext
-    - forbidigo
-    - forcetypeassert
-    - gocheckcompilerdirectives
-    - gochecksumtype
-    - gocognit
-    - goconst
-    - godot
-    - gomoddirectives
-    - goprintffuncname
-    - gosmopolitan
-    - govet
-    - importas
-    - inamedparam
-    - ineffassign
-    - interfacebloat
-    - intrange
-    - mirror
-    - misspell
-    - nakedret
-    - nilerr
-    - noctx
-    - nolintlint
-    - nosprintfhostport
-    - predeclared
-    - reassign
-    - staticcheck
-    - tagalign
-    - unconvert
-    - unparam
-    - unused
-    - usestdlibvars
-    - wastedassign
-    - whitespace
+  - asasalint
+  - asciicheck
+  - bidichk
+  - canonicalheader
+  - contextcheck
+  - copyloopvar
+  - decorder
+  - dogsled
+  - dupword
+  - durationcheck
+  - errcheck
+  - errchkjson
+  - fatcontext
+  - forbidigo
+  - forcetypeassert
+  - gocheckcompilerdirectives
+  - gochecksumtype
+  - gocognit
+  - goconst
+  - godot
+  - gomoddirectives
+  - goprintffuncname
+  - gosmopolitan
+  - govet
+  - importas
+  - inamedparam
+  - ineffassign
+  - interfacebloat
+  - intrange
+  - mirror
+  - misspell
+  - nakedret
+  - nilerr
+  - noctx
+  - nolintlint
+  - nosprintfhostport
+  - predeclared
+  - reassign
+  - staticcheck
+  - tagalign
+  - unconvert
+  - unparam
+  - unused
+  - usestdlibvars
+  - wastedassign
+  - whitespace
   settings:
     copyloopvar:
       check-alias: true
@@ -74,22 +74,26 @@ linters:
   exclusions:
     generated: lax
     presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
+    - comments
+    - common-false-positives
+    - legacy
+    - std-error-handling
     paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - third_party$
+    - builtin$
+    - examples$
+    rules:
+    - path: _test\.go
+      linters:
+      - goconst
 formatters:
   enable:
-    - gci
-    - gofmt
-    - gofumpt
+  - gci
+  - gofmt
+  - gofumpt
   exclusions:
     generated: lax
     paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - third_party$
+    - builtin$
+    - examples$
