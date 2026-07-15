@@ -1,10 +1,9 @@
-{pkgs ? (import <nixpkgs> { config.allowUnfree = true; })}:
+{pkgs ? (import <nixpkgs> {})}:
 with pkgs;
   mkShell {
     buildInputs = [
-      go_1_24
+      go_1_26
       golangci-lint
-      vault
       osv-scanner
       goreleaser
     ];
